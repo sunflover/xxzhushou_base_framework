@@ -23,6 +23,4 @@
 &emsp;&emsp;一个完整的脚本任务`task`由一系列流程`processes`组成，而流程又由多个流程片`process`组成，每一个流程片由流程片初始界面`page`和一个事件函数`actionFunc`组成。  
 &emsp;&emsp;`runTask`方法首先会从`taskList`中提取对应的`processes`，然后以`process`为单位具体执行。程序首先会等待流程片初始界面`page`的到来，但并不关心之前的任何流程，然后开始执行流程片的具体的逻辑操作函数`actionFunc`，执行完成后释放流程片控制权，同时不关心后续流程。
 #### 联系方式
-Email:cndy1860@gmail.com
-Q:8814-1925
-    
+cndy1860@gmail.com
