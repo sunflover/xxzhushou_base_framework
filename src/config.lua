@@ -6,8 +6,8 @@
 CFG = {}	--配置文件总表，注册在_G下
 
 -----------------版本信息-----------------
-CFG.VERSION = "v0.0.3"
-CFG.BIULD_TIME = "20181122"
+CFG.VERSION = "v0.0.5"
+CFG.BIULD_TIME = "20181127"
 
 -----------------开发分辨率-----------------
 CFG.RESOLUTION = {w = 540, h = 960}
@@ -19,7 +19,7 @@ CFG.WRITE_LOG = false		--是否将LOG写入log.txt文件
 
 
 -----------------重启脚本及应用参数-----------------
-CFG.ALLOW_BREAKING_TASK	= false		--是否允许中断任务
+CFG.ALLOW_BREAKING_TASK = false		--是否允许中断任务
 CFG.ALLOW_RESTART = false			--是否允许重启脚本来解决异常
 CFG.APP_ID = "com.netease.pes"		--应用名称
 
@@ -45,6 +45,16 @@ CFG.DEFAULT_WAIT_AFTER_FIND = 200	--goNextByCatchPoint找到点后等待点击�
 -----------------找色参数-----------------
 CFG.DEFAULT_FUZZY = 95		--默认颜色模糊相似度
 
+-----------------touch参数-----------------
+CFG.TOUCH_MOVE_STEP = 50	--touchMoveTo的移动步长
+
+
+-----------------用户设置-----------------
+CFG.ALLOW_SUBSTITUTE = false		--是否允许开场换人
+CFG.SUBSTITUTE_CONDITION = 1		--换人条件:0为只有当场上状态极差才考虑换，1为好状态好一档就换，2为状态好2档才换
+CFG.SUBSTITUTE_INDEX_LIST = {}			--贴补席对应关系表
+CFG.REPEAT_TIMES = 0				--任务循环次数
+
 -----------------支持分辨率-----------------
 CFG.SUPPORT_RESOLUTION = {
 	--9:16
@@ -54,7 +64,6 @@ CFG.SUPPORT_RESOLUTION = {
 	{1440, 2560},
 	{640, 1136},
 	{750, 1334},
-	{1080, 2160},
 	--[[
 	--9:18
 	{1440*2880},

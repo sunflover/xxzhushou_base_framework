@@ -97,7 +97,7 @@ function M.runTask(taskName, repeatTimes, breakPointFlag)	--执行任务，param
 						continueFlag = false
 						break
 					end
-					if os.time() - startTime > defaultTimeout then
+					if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
 						catchError(ERR_TIMEOUT, "still start from a unkown page! can not work!")
 					end
 					sleep(200)
@@ -255,7 +255,7 @@ function M.runBreakPointTask(taskName)
 			end
 		end
 		
-		if getCurrentTime() - startTime > defaultTimeout then
+		if getCurrentTime() - startTime > CFG.DEFAULT_TIMEOUT then
 			catchError(ERR_TIMEOUT, "time out at catch a static page in break point task")
 		end
 	end

@@ -61,6 +61,9 @@ funcList[PAGE_MATCHED] = function()
 end
 
 funcList[PAGE_ROSTER] = function()
+	if CFG.ALLOW_SUBSTITUTE then
+		processSwitchPlayer()
+	end
 	page.goNextByCatchPoint({17, 34, 951, 531},
 		"820|513|0x0079fd,947|513|0x0079fd,60|302|0x0079fd,65|354|0xfdfdfd,790|132|0x1f1f1f,916|147|0x1f1f1f")
 end

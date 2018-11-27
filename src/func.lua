@@ -106,11 +106,13 @@ function catchError(errType, errMsg, forceContinueFlag)	--捕获异常，输出�
 		LogError("WARNING:  ------!!!!!!!!!! FORCE CONTINUE !!!!!!!!!!------")
 		return
 	end
-	
-	if etype == ERR_MAIN or etype == ERR_FILE or etype == ERR_PARAM then	--核心错误仅允许exit
+	if etype == ERR_MAIN then	--核心错误仅允许exit
+		LogError("!!!cant recover task, program will end now!!!")
+		lua_exit()
+	elseif etype == ERR_FILE or etype == ERR_PARAM then	--核心错误仅允许exit
 		LogError("!!!cant recover task, program will end 10s later!!!")
 		sleep(10000)
-		xmod.exit()
+		lua_exit()
 	elseif etype == ERR_WARNING then		--警告任何时候只提示
 		LogError("!!!maybe some err in here, care it!!!")
 	elseif etype == ERR_TIMEOUT then		--超时错误允许exit，restart
@@ -186,4 +188,64 @@ function reTap()
 	end
 	
 	lastTap.x, lastTap.y, lastTap.delay= 0, 0, 0
+end
+
+function printTbl(tbl)--table输出,请注意不要传入对象,会无限循环卡死
+	local function prt(tbl,tabnum)
+		tabnum=tabnum or 0
+		if not tbl then return end
+		for k,v in pairs(tbl)do
+			if type(v)=="table" then
+				print(string.format("%s[%s](%s) = {",string.rep("\t",tabnum),tostring(k),"table"))
+				prt(v,tabnum+1)
+				print(string.format("%s}",string.rep("\t",tabnum)))
+			else
+				print(string.format("%s[%s](%s) = %s",string.rep("\t",tabnum),tostring(k),type(v),tostring(v)))
+			end
+		end
+	end
+	print("Print Table = {")
+	prt(tbl,1)
+	print("}")
+end
+
+function prt(...)--万能输出
+	local con={...}
+	for key,value in ipairs(con) do
+		if(type(value)=="table")then
+			printTbl(value)
+			con[key]=""
+		else
+			con[key]=tostring(value)
+		end
+	end
+	sysLog(table.concat(con,"  "))
+end
+
+function touchMoveTo(x1, y1, x2, y2)
+	if x1 ~= x2 then
+		local stepX = x2 > x1 and CFG.TOUCH_MOVE_STEP or -CFG.TOUCH_MOVE_STEP
+		local stepY = (y2 - y1) / math.abs((x2 - x1) / stepX)
+		
+		--Log("x1="..x1.." y1="..y1.." x2="..x2.." y2="..y2)
+		
+		touchDown(1, x1, y1)
+		sleep(200)
+		for i = 1, math.abs((x2 - x1) / stepX), 1 do
+			touchMove(1, x1 + i * stepX, y1 + i * stepY)
+		end
+		touchMove(1, x2, y2)
+		sleep(200)
+		touchUp(1, x2, y2)
+	else
+		touchDown(1, x1, y1)
+		sleep(20)
+		local stepY = y2 > y1 and CFG.TOUCH_MOVE_STEP or -CFG.TOUCH_MOVE_STEP
+		for i = 1, math.abs((y2 - y1) / stepY), 1 do
+			touchMove(1, x2, y1 + i * stepY)
+		end
+		touchMove(1, x2, y2)
+		sleep(200)
+		touchUp(1, x2, y2)
+	end
 end

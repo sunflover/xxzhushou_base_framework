@@ -33,6 +33,9 @@ M.pageEigenvalueList = {
 	{pageName = PAGE_END_READY, points = "398|244|0x0079fd,706|244|0xffffff,674|392|0x0079fd,689|391|0x12a42b,829|510|0x0079fd"},
 	{pageName = PAGE_RANK_UP, points = "267|25|0x000000,619|22|0xc6c6c9,598|20|0xffffff,713|18|0xc6c6c9,818|22|0xc6c6c9,824|512|0x0079fd"},
 	
+	{pageName = PAGE_SUBSTITUTED, points = "73|35|0xffffff,177|119|0xffffff,785|138|0x131313,827|125|0x003773,788|433|0x131313"},
+	{pageName = PAGE_PLAYER_STATUS, points = "124|510|0x0079fd,68|407|0xfdfdfd,825|128|0x005cbf,800|275|0xff9500,797|421|0x1f1f1f"},
+	
 }
 function M.toPointsString(pointsTable)		--将{{x1, y1, c1},{x2, y2, c2},}转换成"x1|y1|c1,x2|y2|c2"格式
 	local strr = ""
