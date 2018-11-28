@@ -32,7 +32,7 @@ function processUiParam(retParam)
 	for k, v in pairs(tmp) do		--检测一个替补有无对应多个位置
 		for _k, _v in pairs(tmp) do
 			if _k > k then
-				if v == _v then
+				if v ~= 0 and v == _v then
 					return false	--对应有重复情况，报错
 				end
 			end
@@ -50,7 +50,7 @@ function processUiParam(retParam)
 	elseif retParam.comboBoxSubstituteConditon == "替补状态好两档" then
 		CFG.SUBSTITUTE_CONDITION = 2
 	else
-		CFG.SUBSTITUTE_CONDITION = 2
+		CFG.SUBSTITUTE_CONDITION = 0
 	end
 
 	
@@ -78,7 +78,8 @@ function main()
 		end
 	end
 	
-	--task.runTask(TASK_SIM, CFG.REPEAT_TIMES)
+	sleep(1000)
+	task.runTask(TASK_SIM, CFG.REPEAT_TIMES)
 	--task.runTask(TASK_TEST, 1)
 	
 	lua_exit()
@@ -87,4 +88,4 @@ end
 xpcall(main(), catchError(ERR_MAIN, "main err"))
 init(0,1)
 setScreenScale(540,960)
---if page.getCurrentPage() ~= nil then page.getCurrentPage() else Log("nil page") end
+if page.getCurrentPage() ~= nil then page.getCurrentPage() else Log("nil page") end

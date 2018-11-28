@@ -6,14 +6,14 @@
 CFG = {}	--配置文件总表，注册在_G下
 
 -----------------版本信息-----------------
-CFG.VERSION = "v0.0.5"
-CFG.BIULD_TIME = "20181127"
+CFG.VERSION = "v0.1.0"
+CFG.BIULD_TIME = "20181128"
 
 -----------------开发分辨率-----------------
 CFG.RESOLUTION = {w = 540, h = 960}
 
 -----------------调试参数-----------------
-CFG.IS_DEBUG = false			--调试
+CFG.IS_DEBUG = false		--调试
 CFG.LOG = false				--是否允许输出LOG信息，必须在IS_DEBUG为TRUE的时候有效
 CFG.WRITE_LOG = false		--是否将LOG写入log.txt文件
 

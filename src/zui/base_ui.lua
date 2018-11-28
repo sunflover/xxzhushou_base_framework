@@ -25,7 +25,7 @@ function GetUI()
 	pageBaseSet:addEdit({id="editerCircleTimes",prompt="提示文本1",text="10",color="0,0,255",w=30,h=14,align="right",size=24})
 	
 	
-	local feildPositionStr = "1,2,3,4,5,6,7,8,9,10,11"
+	local feildPositionStr = "1,2,3,4,5,6,7,8,9,10,11,0"
 	
 	local pageSubstituteSet = Page:new(myui,{text = "换人设置",size = 24})
 	--pageSubstituteSet:addLabel({text="    替补席按从上到下分别编号为1-7号位，球场上11个球员按从上到下，从左到右为1-11号为，可",size=15})
@@ -52,11 +52,11 @@ function GetUI()
 	pageSubstituteSet:nextLine()
 	pageSubstituteSet:addLabel({text="替补 6  -->",size=24})
 	pageSubstituteSet:addComboBox({id="comboBoxBench6",list=feildPositionStr,select=8,w=35,h=12, size = 15})
-	pageSubstituteSet:addLabel({text="        1-11号位置，自行设置对应",size=20})
+	pageSubstituteSet:addLabel({text="        1-11号位置，自行对应，0为",size=20})
 	pageSubstituteSet:nextLine()
 	pageSubstituteSet:addLabel({text="替补 7  -->",size=24})
 	pageSubstituteSet:addComboBox({id="comboBoxBench7",list=feildPositionStr,select=9,w=35,h=12, size = 15})
-	pageSubstituteSet:addLabel({text="        关系即可。",size=20})
+	pageSubstituteSet:addLabel({text="        不替换。",size=20})
 	
 	
 	local pageSubstitutePic = Page:new(myui,{text = "编号图示",size = 24})

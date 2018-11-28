@@ -138,8 +138,8 @@ function processSwitchPlayer()
 		for k, v in pairs(benchPlayersFirstHalf) do
 			v.fieldIndex = k
 		end
-	end	
-
+	end
+	
 	touchMoveTo(20, 500, 20, 110) --滑动替补至下半部分
 	
 	local benchPlayersLatterHalf = getPlayerStatusInfo("benchLatterHalf")	--获取替补席球员信息，未显示的后半部分
@@ -156,26 +156,27 @@ function processSwitchPlayer()
 	
 	for k, v in pairs(benchPlayersLatterHalf) do	--先换下半部分的
 		local substituteFlag = false	--是否换过人标志
-		if CFG.SUBSTITUTE_CONDITION == 0 then	--主力为极差的时候才换
-			if fieldPlayers[v.fieldIndex].status == 1 and v.status > 1 then
-				substituteFlag = true
-				touchDown(1, v.x, v.y)
-				touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
+		if v.fieldIndex ~= 0 then
+			if CFG.SUBSTITUTE_CONDITION == 0 then	--主力为极差的时候才换
+				if fieldPlayers[v.fieldIndex].status == 1 and v.status > 1 then
+					substituteFlag = true
+					touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
+				end
+			else	--根据状态档次替换
+				--Log("v.status="..v.status.."  fieldPlayers.status="..fieldPlayers[v.fieldIndex].status)
+				if v.status - fieldPlayers[v.fieldIndex].status >= CFG.SUBSTITUTE_CONDITION then
+					substituteFlag = true
+					touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
+				end
 			end
-		else	--根据状态档次替换
-			--Log("v.status="..v.status.."  fieldPlayers.status="..fieldPlayers[v.fieldIndex].status)
-			if v.status - fieldPlayers[v.fieldIndex].status >= CFG.SUBSTITUTE_CONDITION then
-				substituteFlag = true
-				touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
+			
+			if substituteFlag then	--换人了需要再次调出替补名单
+				--sleep(200)
+				page.goNextByCatchPoint({5, 238, 146, 390}, "63|316|0x0079fd,53|322|0xfdfdfd,88|320|0xfdfdfd,61|345|0xfdfdfd")
+				sleep(500)
 			end
 		end
-		
-		if substituteFlag then	--换人了需要再次调出替补名单
-			--sleep(200)
-			page.goNextByCatchPoint({5, 238, 146, 390}, "63|316|0x0079fd,53|322|0xfdfdfd,88|320|0xfdfdfd,61|345|0xfdfdfd")
-			sleep(500)
-		end
-	end	
+	end
 	sleep(200)
 	
 	touchMoveTo(20, 110, 20, 500) --滑滑动替补回到上半部分
@@ -183,26 +184,28 @@ function processSwitchPlayer()
 	
 	for k, v in pairs(benchPlayersFirstHalf) do		--换上半部分
 		local substituteFlag = false	--是否换过人标志
-		if CFG.SUBSTITUTE_CONDITION == 0 then	--主力为极差的时候才换
-			if fieldPlayers[v.fieldIndex].status == 1 and v.status > 1 then
-				substituteFlag = true
-				touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
+		if v.fieldIndex ~= 0 then
+			if CFG.SUBSTITUTE_CONDITION == 0 then	--主力为极差的时候才换
+				if fieldPlayers[v.fieldIndex].status == 1 and v.status > 1 then
+					substituteFlag = true
+					touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
+				end
+			else	--根据状态档次替换
+				if v.status - fieldPlayers[v.fieldIndex].status >= CFG.SUBSTITUTE_CONDITION then
+					--Log("-----"..fieldPlayers[v.fieldIndex].x.." y="..fieldPlayers[v.fieldIndex].y)
+					substituteFlag = true
+					touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
+				end
 			end
-		else	--根据状态档次替换
-			if v.status - fieldPlayers[v.fieldIndex].status >= CFG.SUBSTITUTE_CONDITION then
-				--Log("-----"..fieldPlayers[v.fieldIndex].x.." y="..fieldPlayers[v.fieldIndex].y)
-				substituteFlag = true
-				touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
+			
+			if k < #benchPlayersFirstHalf and substituteFlag then	--换人了需要再次调出替补名单, 除开最后一次
+				--sleep(200)
+				page.goNextByCatchPoint({5, 238, 146, 390}, "63|316|0x0079fd,53|322|0xfdfdfd,88|320|0xfdfdfd,61|345|0xfdfdfd")
+				sleep(500)
 			end
 		end
 		
-		if k < #benchPlayersFirstHalf and substituteFlag then	--换人了需要再次调出替补名单
-			--sleep(200)
-			page.goNextByCatchPoint({5, 238, 146, 390}, "63|316|0x0079fd,53|322|0xfdfdfd,88|320|0xfdfdfd,61|345|0xfdfdfd")
-			sleep(500)
-		end
-		
-		if k == #benchPlayersFirstHalf and substituteFlag == false then	--没换过人需要退出替补名单
+		if k == #benchPlayersFirstHalf and substituteFlag == false then	--最后一次没换过人需要退出替补名单
 			tap(480, 465)
 		end
 	end

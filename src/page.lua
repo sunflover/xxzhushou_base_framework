@@ -24,7 +24,8 @@ package.loaded[modName] = M
 M.pageEigenvalueList = {
 	{pageName = PAGE_MAIN, points = "136|21|0x000000,264|26|0x000000,712|18|0x007aff,122|513|0xe2e2e2,155|511|0xffffff,258|512|0xc6c6c6"},
 	{pageName = PAGE_ONLINE_MATCH, points = "146|23|0x000000,265|18|0x000000,712|20|0x007aff,128|512|0x0079fd,196|439|0xffffff,745|270|0x007bfd"},
-	{pageName = PAGE_COACH_RANK, points = "137|21|0x000000,712|19|0x007aff,295|82|0x1f1f1f,64|109|0x0079fd,74|408|0x0079fd,228|514|0x696969"},
+	--{pageName = PAGE_COACH_RANK, points = "137|21|0x000000,712|19|0x007aff,295|82|0x1f1f1f,64|109|0x0079fd,74|408|0x0079fd,228|514|0x696969"},
+	{pageName = PAGE_COACH_RANK, points = "64|86|0x12a42b,62|315|0x0079fd,111|518|0x0079fd,286|504|0x696969,395|505|0xcaddf0,610|78|0xfc3979"},
 	{pageName = PAGE_MATCHED, points = "140|23|0x000000,713|18|0xc6c6c9,127|515|0x5c5c5c,824|504|0x0079fd"},
 	{pageName = PAGE_ROSTER, points = "139|24|0x000000,713|21|0xc6c6c9,60|303|0x0079fd,852|120|0x005cbf,780|433|0x1f1f1f,812|513|0x0079fd"},
 	{pageName = PAGE_PLAYING, points = "105|23|0x24353f,222|21|0x21323d,125|54|0x0ce0f1,205|50|0x08dca8", fuzzy = 80},
@@ -136,7 +137,7 @@ function M.catchPage(points, waitTime,fuzzy)		--等待捕获到指定界面再�
 	
 	local startTime = getCurrentTime()
 	while true do
-		if matchColors(points, f) then
+		if M.matchColors(points, f) then
 			break
 		end
 		if getCurrentTime() - startTime > wt then

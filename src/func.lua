@@ -84,7 +84,7 @@ function catchError(errType, errMsg, forceContinueFlag)	--捕获异常，输出�
 	local emsg = errMsg or "some error"
 	local eflag = forceContinueFlag or false
 	
-	if etype == ERR_MAIN then
+	if etype == ERR_MAIN or etype == ERR_TASK_ABORT then
 		LogError("CORE ERR------->> "..emsg)
 	elseif etype == ERR_NORMAL then
 		LogError("NORMAL ERR------->> "..emsg)
@@ -106,7 +106,7 @@ function catchError(errType, errMsg, forceContinueFlag)	--捕获异常，输出�
 		LogError("WARNING:  ------!!!!!!!!!! FORCE CONTINUE !!!!!!!!!!------")
 		return
 	end
-	if etype == ERR_MAIN then	--核心错误仅允许exit
+	if etype == ERR_MAIN or etype == ERR_TASK_ABORT then	--核心错误仅允许exit
 		LogError("!!!cant recover task, program will end now!!!")
 		lua_exit()
 	elseif etype == ERR_FILE or etype == ERR_PARAM then	--核心错误仅允许exit
@@ -210,6 +210,11 @@ function printTbl(tbl)--table输出,请注意不要传入对象,会无限循环�
 end
 
 function prt(...)--万能输出
+
+	if CFG.IS_DEBUG ~= true or CFG.LOG ~= true then
+		return
+	end
+	
 	local con={...}
 	for key,value in ipairs(con) do
 		if(type(value)=="table")then

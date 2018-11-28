@@ -53,6 +53,27 @@ end
 funcList[PAGE_COACH_RANK] = function()
 	page.goNextByCatchPoint({751, 476, 955, 534},
 		"823|511|0x0079fd,950|494|0x0079fd,943|526|0x0079fd,789|526|0x0079fd,765|507|0x696969")
+		
+	local startTime = os.time()
+	while true do
+		local isOutOfEnergy = page.matchColors("439|168|0xf5f5f5,442|182|0xdedede,411|276|0xffffff,408|315|0xdedede,401|361|0xcaddf0")
+		local isNextPage = page.isCurrentPage(PAGE_MATCHED)
+		
+		if isOutOfEnergy then	--能量不足
+			page.goNextByCatchPoint({208, 281, 749, 442}, "434|374|0xcaddf0,233|358|0xcaddf0,715|387|0xcaddf0,464|333|0xf5f5f5")
+			dialog("能量不足，即将退出", 10)
+			catchError(ERR_TASK_ABORT, "能量不足将退出")
+		end
+		
+		if isNextPage then	--匹配到
+			break
+		end
+		
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+			break
+		end
+		sleep(200)
+	end
 end
 
 funcList[PAGE_MATCHED] = function()
@@ -90,6 +111,27 @@ end
 funcList[PAGE_RANK_UP] = function()
 	page.goNextByCatchPoint({15, 0, 943, 532},
 		"832|515|0x0079fd,789|530|0x0079fd,916|13|0xffffff,247|15|0x000000")
+		
+	--领取奖励
+	local startTime = os.time()
+	while true do
+		local isRewards = page.matchColors("441|418|0xcaddf0,518|422|0xcaddf0,470|380|0xf5f5f5,458|463|0xf5f5f5,140|512|0x373737,406|508|0x767677,805|512|0x373737")
+		local isNextPage = page.isCurrentPage(PAGE_COACH_RANK)
+		
+		if isRewards then	--奖励
+			goNextByCatchPoint({228, 365, 735, 474}, "445|421|0xcaddf0,460|381|0xf5f5f5,460|465|0xf5f5f5,234|420|0xf5f5f5,723|422|0xf5f5f5")
+			break
+		end
+		
+		if isNextPage then	--回到天梯界面了
+			break
+		end
+		
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+			break
+		end
+		sleep(200)
+	end
 end
 
 local function initTask()
