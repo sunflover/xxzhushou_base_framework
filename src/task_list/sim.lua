@@ -14,8 +14,8 @@ local M = {}
 local taskSim = {
 	name = TASK_SIM,
 	process = {
-		--{name = PAGE_MAIN},
-		--{name = PAGE_ONLINE_MATCH},
+		{name = PAGE_MAIN, allowSkip = true, justFirstRun = true},
+		{name = PAGE_ONLINE_MATCH, allowSkip = true, justFirstRun = true},
 		{name = PAGE_COACH_RANK},
 		{name = PAGE_MATCHED},
 		{name = PAGE_ROSTER},
@@ -32,11 +32,13 @@ local taskSim = {
 		{name = PAGE_INTERVAL, timeout = 300, allowSkip = true, checkInterval = 500},	--点球结束
 		
 		{name = PAGE_END_READY},
+		{name = PAGE_OFFLINE_FAIL, allowSkip = true, justFirstRun = true},
 		{name = PAGE_RANK_UP},
 	}
 }
 
 local funcList = {}
+local waitFuncList = {}
 
 
 funcList[PAGE_MAIN] = function()
@@ -53,7 +55,7 @@ end
 funcList[PAGE_COACH_RANK] = function()
 	page.goNextByCatchPoint({751, 476, 955, 534},
 		"823|511|0x0079fd,950|494|0x0079fd,943|526|0x0079fd,789|526|0x0079fd,765|507|0x696969")
-		
+	
 	local startTime = os.time()
 	while true do
 		local isOutOfEnergy = page.matchColors("439|168|0xf5f5f5,442|182|0xdedede,411|276|0xffffff,408|315|0xdedede,401|361|0xcaddf0")
@@ -98,6 +100,24 @@ funcList[PAGE_INTERVAL] = function()
 		"833|517|0x0079fd,783|529|0x0079fd,942|501|0x0079fd,361|64|0x192a35,575|64|0x142733")
 end
 
+local lastPlayingPageTime = 0
+waitFuncList[PAGE_INTERVAL] = function()
+	if page.isCurrentPage(PAGE_PLAYING) then
+		lastPlayingPageTime = os.time()
+	end
+	
+	--Log("lastPlayingPageTime passed "..(os.time() - lastInteralPageTime).."s yet")	
+	--因为半场为超长时间等待，如果长时间不在playing判定为异常,因为有精彩回放所以超时为两倍
+	if lastPlayingPageTime > 0 and (os.time() - lastPlayingPageTime > CFG.DEFAULT_TIMEOUT * 2) then	 
+		catchError(ERR_TIMEOUT, "cant check playing at wait PAGE_INTERVAL")
+	end
+	
+	if lastPlayingPageTime > 0 and (os.time() - lastPlayingPageTime > 5) then	--跳过进球回放什么的
+		tap(97,514)
+		sleep(1000)
+	end
+end
+
 funcList[PAGE_INTERVAL_READY] = function()
 	page.goNextByCatchPoint({48, 183, 952, 533},
 		"834|513|0x0079fd,799|499|0x0079fd,782|531|0x0079fd,947|529|0x0079fd,271|403|0xffffff,897|241|0xffffff")
@@ -108,10 +128,15 @@ funcList[PAGE_END_READY] = function()
 		"819|514|0x0079fd,947|503|0x0079fd,371|253|0x0079fd,689|391|0x12a42b,913|408|0xffffff")
 end
 
+funcList[PAGE_OFFLINE_FAIL] = function()
+	page.goNextByCatchPoint({169, 132, 790, 447},
+		"443|326|0xcaddf0,268|311|0xcaddf0,682|345|0xcaddf0,200|351|0x767676,745|397|0x7a7a7a")
+end
+
 funcList[PAGE_RANK_UP] = function()
 	page.goNextByCatchPoint({15, 0, 943, 532},
 		"832|515|0x0079fd,789|530|0x0079fd,916|13|0xffffff,247|15|0x000000")
-		
+	
 	--领取奖励
 	local startTime = os.time()
 	while true do
@@ -143,6 +168,13 @@ local function initTask()
 		end
 	end
 	
+	for k, v in pairs(taskSim.process) do
+		for _k, _v in pairs(waitFuncList) do
+			if v.name == _k then
+				v.waitFunc = _v
+			end
+		end
+	end
 	task.insertTask(taskSim)
 end
 

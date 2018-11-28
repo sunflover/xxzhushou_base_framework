@@ -22,6 +22,7 @@ _G[modName] = M
 package.loaded[modName] = M
 
 M.pageEigenvalueList = {
+	{pageName = PAGE_INIT, points = "479|400|0xffffff,329|338|0xdc0014,332|288|0xdc0014,610|294|0xdc0014,612|315|0xdc0014"},
 	{pageName = PAGE_MAIN, points = "136|21|0x000000,264|26|0x000000,712|18|0x007aff,122|513|0xe2e2e2,155|511|0xffffff,258|512|0xc6c6c6"},
 	{pageName = PAGE_ONLINE_MATCH, points = "146|23|0x000000,265|18|0x000000,712|20|0x007aff,128|512|0x0079fd,196|439|0xffffff,745|270|0x007bfd"},
 	--{pageName = PAGE_COACH_RANK, points = "137|21|0x000000,712|19|0x007aff,295|82|0x1f1f1f,64|109|0x0079fd,74|408|0x0079fd,228|514|0x696969"},
@@ -36,6 +37,8 @@ M.pageEigenvalueList = {
 	
 	{pageName = PAGE_SUBSTITUTED, points = "73|35|0xffffff,177|119|0xffffff,785|138|0x131313,827|125|0x003773,788|433|0x131313"},
 	{pageName = PAGE_PLAYER_STATUS, points = "124|510|0x0079fd,68|407|0xfdfdfd,825|128|0x005cbf,800|275|0xff9500,797|421|0x1f1f1f"},
+	
+	{pageName = PAGE_OFFLINE_FAIL, points = "281|330|0xcaddf0,244|370|0xf5f5f5,197|365|0x767676,248|408|0x757575,761|394|0x7a7a7a,701|184|0xf5f5f5"},	--天梯掉线失败界面
 	
 }
 function M.toPointsString(pointsTable)		--将{{x1, y1, c1},{x2, y2, c2},}转换成"x1|y1|c1,x2|y2|c2"格式

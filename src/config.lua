@@ -6,7 +6,7 @@
 CFG = {}	--配置文件总表，注册在_G下
 
 -----------------版本信息-----------------
-CFG.VERSION = "v0.1.0"
+CFG.VERSION = "v0.1.2"
 CFG.BIULD_TIME = "20181128"
 
 -----------------开发分辨率-----------------
@@ -20,7 +20,7 @@ CFG.WRITE_LOG = false		--是否将LOG写入log.txt文件
 
 -----------------重启脚本及应用参数-----------------
 CFG.ALLOW_BREAKING_TASK = false		--是否允许中断任务
-CFG.ALLOW_RESTART = false			--是否允许重启脚本来解决异常
+CFG.ALLOW_RESTART = true			--是否允许重启脚本来解决异常
 CFG.APP_ID = "com.netease.pes"		--应用名称
 
 

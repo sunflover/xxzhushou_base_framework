@@ -65,10 +65,11 @@ function M.isInTaskPage()
 	return false
 end
 
-function M.runTask(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任务名称，任务重复次数（默认为一次0），是否为断点任务
+function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任务名称，任务重复次数（默认为一次0），是否为断点任务
 	local reTimes = repeatTimes or 1
 	local firstRunProcess = true
 	local breakTaskFlag = breakPointFlag ~= false
+	local allowSkipBackup = {}
 	
 	if M.isExistTask(taskName) ~= true then		--检查任务是否存在
 		catchError(ERR_PARAM, "have no task: "..taskName)
@@ -90,7 +91,7 @@ function M.runTask(taskName, repeatTimes, breakPointFlag)	--执行任务，param
 			
 			if os.time() - startTime > CFG.WAIT_SKIP_NIL_PAGE then
 				Log("always still a nil page, please skip it")
-				dialog("always still a nil page, please skip it")
+				--dialog("always still a nil page, please skip it")
 				startTime = os.time()
 				while true do
 					if page.getCurrentPage() then
@@ -111,10 +112,36 @@ function M.runTask(taskName, repeatTimes, breakPointFlag)	--执行任务，param
 		end
 	end
 	
+	for k, v in pairs(taskProcess) do	--第一次运行可能是重启过应用，允许直接跳转至任何流程片
+		table.insert(allowSkipBackup, v.allowSkip)	--备份原allowSkip属性
+		v.allowSkip = true
+	end
+	
 	for i = 1, reTimes, 1 do
-		Log("-----------------------START RUN A ROUND OF TASK: "..taskName.."-----------------------")
-		for k, v in pairs(taskProcess) do
-			v.skipStatus = false
+		Log("-----------------------START RUN A ROUND OF TASK: "..taskName.."-----------------------")		
+		for k, v in pairs(taskProcess) do	
+			if i == 1 then	--首次运行默认均不跳过
+				v.skipStatus = false
+			else	--非首次运行跳过仅首次运行的流程片
+				if v.justFirstRun then	--只允许首次运行的流程片
+					v.skipStatus = true
+				else
+					v.skipStatus = false
+				end
+			end
+		end
+		
+		if i == 2 then
+			for k, v in pairs(taskProcess) do	--第一次运行过后恢复原来的allowSkip属性
+				v.allowSkip = allowSkipBackup[k]
+			end
+		end
+		
+		local waitCheckSipTime = 0
+		if i == i then		--第一次运行就快速检测是否可以跳过主界面
+			waitCheckSipTime = 1
+		else
+			waitCheckSipTime = CFG.WAIT_CHECK_SKIP
 		end
 		
 		for k, v in pairs(taskProcess) do
@@ -143,20 +170,15 @@ function M.runTask(taskName, repeatTimes, breakPointFlag)	--执行任务，param
 					break
 				end
 				
+				if v.waitFunc ~= nil then --等待期间执行的prroces的等待函数
+					v.waitFunc()
+				end
+				
 				if getCurrentTime() - startTime > timeout then	--流程超时
 					catchError(ERR_TIMEOUT, "have waitting process: "..v.name.." "..tostring(getCurrentTime()-startTime).."s yet, try end it")
 				end
 				
-				if getCurrentTime() - startTime > CFG.WAIT_CHECK_BREAKING_TASK then	--中断任务
-					if breakTaskFlag == false and firstRunProcess and CFG.ALLOW_BREAKING_TASK == TRUE then--非中断任务才可执行中断任务，否则无限循环
-						Log("try load breakPoint task")
-						firstRunProcess = false
-						runBreakPointTask(taskName)
-						startTime = getCurrentTime()	--重置startTime，防止在breakingTask后超时
-					end
-				end
-				
-				if getCurrentTime() - startTime > CFG.WAIT_CHECK_SKIP then	--跳过
+				if getCurrentTime() - startTime > waitCheckSipTime then	--跳过
 					local currentPage = page.getCurrentPage()
 					if currentPage ~= nil and currentPage ~= PAGE_NONE then
 						local isProcessPage = false
@@ -195,112 +217,13 @@ function M.runTask(taskName, repeatTimes, breakPointFlag)	--执行任务，param
 						end
 					end
 				end
-		
+				
 				sleep(checkInterval)
 			end
 			sleep(200)
 		end
 		Log("-------------------------END OF THIS ROUND TASK: "..taskName.."-----------------------")
 	end
-end
-
-function M.runBreakPointTask(taskName)
-	local lastStaticPage = PAGE_NONE
-	local lastStaticPageStartTime = 0
-	
-	local startTime = getCurrentTime()
-	while true do	--跳过启动界面
-		lastStaticPage = getCurrentPage()
-		if lastStaticPage ~= nil then
-			lastStaticPageStartTime = getCurrentTime()
-			Log("catch a lastStaticPage info")
-			break
-		end
-		
-		if getCurrentTime() - startTime > CFG.DEFAULT_TIMEOUT then
-			catch(TIMEOUT, "cant catch a no nil page in befor break point task")
-		end
-		sleep(100)
-	end
-	
-	startTime = getCurrentTime()
-	while true do
-		if lastStaticPage ~= nil and getCurrentTime() - lastStaticPageStartTime >= 3 then		--获取到一个页面稳定3秒不变
-			Log("catch a static page")
-			--根据情况选择是否需要跳过一些重启后不好判断的初始界面
-			--if isCurrentPage("init") then	--init对应的可能是多种情况，直接跳转下一种
-			--	Log("catch a init page, skip this page")
-			--	tap(100,100)
-			--	--sleep(1000)
-			--elseif isCurrentPage("agreement") then
-			--	Log("catch a agreement page, skip this page")
-			--	goNextByFindPoint({962, 749, 1078, 806}, "1018|772|0xb8e6cc,988|767|0xffffff,1035|776|0xc1e9d2,1063|776|0x65c990,990|787|0x23b260")
-			--elseif isCurrentPage("tryTeamMange") then
-			--	Log("catch a tryTeamMange page, skip this page")
-			--	goNextByFindPoint({751, 675, 842, 733},
-			--		"788|707|0x0078fd,772|701|0x2b8dfa,825|701|0x1382fc,796|710|0x0078fd,792|715|0xcaddf0")
-			--else
-			--	break
-			--end
-		end
-		
-		local currentPage = getCurrentPage()
-		if currentPage ~= lastStaticPage then
-			lastStaticPage = currentPage
-			lastStaticPageStartTime = getCurrentTime()
-			if currentPage ~= nil then
-				Log("catch a new page")
-			else
-				Log("catch a new nil page")
-			end
-		end
-		
-		if getCurrentTime() - startTime > CFG.DEFAULT_TIMEOUT then
-			catchError(ERR_TIMEOUT, "time out at catch a static page in break point task")
-		end
-	end
-	
-	Log("the final static page is: "..lastStaticPage)
-	local taskStartPageName = lastStaticPage
-	local findBreakProcessFlag = false
-	local originTaskProcess = PROCESS_NONE
-	
-	for k, v in pairs(M.taskList) do
-		if taskName == v.name then
-			Log("find originTask: "..v.name)
-			originTaskProcess = v.process
-			break
-		end
-	end
-	if originTaskProcess == PROCESS_NONE then
-		catchError(ERR_PARAM, "cant find the break point task process")
-	end
-	
-	Log("taskStartPageName="..taskStartPageName)
-	for k, v in pairs(originTaskProcess) do		--将断点任务加入breakpoint task
-		if taskStartPageName == v.name then		--找到当前界面对应的流程起始点
-			Log("catch the break point page: "..v.name)
-			if k == 1 then	--就在流程首个界面，应该执行正常流程
-				catchError(ERR_WARNING, "break point page: "..v.name.." is the 1st process page, should go normal process")
-				return true
-			end
-			
-			findBreakProcessFlag = true
-		end
-		
-		if findBreakProcessFlag == true then	--将流程加入breakpoint task
-			Log("insert process: "..v.name.." into breakPoint process!")
-			for _k, _v in pairs(M.taskList) do
-				if _v.name == "breakPointTask" then
-					table.insert(M.taskList[_k].process, v)
-				end
-			end
-		end
-	end
-	
-	Log("----------------------------------start run breakPointTask----------------------------------")
-	runTask(TASK_BREAK_POINT, 1, true)
-	Log("------------------------------------end run breakPointTask----------------------------------")
 end
 
 return M
