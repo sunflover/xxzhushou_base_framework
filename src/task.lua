@@ -9,9 +9,6 @@ require("page")
 local pairs = _G.pairs
 local getCurrentTime = os.time
 
-local currentTask = TASK_NONE
-local currentProcess = PROCESS_NONE
-
 local modName = "task"
 local M = {}
 
@@ -21,6 +18,10 @@ package.loaded[modName] = M
 M.taskList = {	--任务列表，01预留给断点任务
 	{name = TASK_BREAK_POINT},
 }
+
+function M.setCurrentTaskStatus(status)
+	setStringConfig("CurrentTaskStatus", status)
+end
 
 function M.insertTask(task)
 	table.insert(M.taskList, task)
@@ -37,8 +38,8 @@ function M.isExistTask(taskName)	--是否存在任务taskName
 end
 
 function M.getCurrentTask()		--获取当前任务
-	if currentTask ~= TASK_NONE and currentTask ~= nil then
-		return currentTask
+	if CURRENT_TASK ~= TASK_NONE and CURRENT_TASK ~= nil then
+		return CURRENT_TASK
 	end
 end
 
@@ -56,7 +57,7 @@ function M.isInTaskPage()
 		return false
 	end
 	
-	local currentProcess = M.getTaskProcess(currentTask)
+	local currentProcess = M.getTaskProcess(CURRENT_TASK)
 	for k, v in pairs(currentProcess) do
 		if v.name == currentPage then
 			return true
@@ -112,6 +113,9 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 		end
 	end
 	
+	CURRENT_TASK = taskName
+	M.setCurrentTaskStatus("start")
+	
 	for k, v in pairs(taskProcess) do	--第一次运行可能是重启过应用，允许直接跳转至任何流程片
 		table.insert(allowSkipBackup, v.allowSkip)	--备份原allowSkip属性
 		v.allowSkip = true
@@ -148,6 +152,9 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 			local checkInterval = v.checkInterval or CFG.DEFAULT_PAGE_CHECK_INTERVAL
 			local timeout = v.timeout or CFG.DEFAULT_TIMEOUT
 			local startTime = getCurrentTime()
+
+			CURRENT_PROCESS = v.name
+			
 			while true do
 				--Log("now wait process page: "..v.name)
 				if v.skipStatus == true then	--跳过当前界面流程
@@ -185,7 +192,7 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 						local pageIndex = 0
 						for _k, _v in pairs(taskProcess) do
 							if _v.name == currentPage then	--当前界面确认处于流程中某界面
-								Log("have a not current process page")
+								--Log("have a not current process page")
 								isProcessPage = true
 								pageIndex = _k
 								break
@@ -195,8 +202,8 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 						local continuousSkipFlag = false
 						for _k, _v in pairs(taskProcess) do
 							if _k >= k and _k < pageIndex then	--从当前流程界面至当前实际界面均存在skip才可能是正常skip流程
-								Log("have a part at currentProcessPage to currentPage")
-								Log("k="..k.." pageIndex="..pageIndex)
+								--Log("have a part at currentProcessPage to currentPage")
+								--Log("k="..k.." pageIndex="..pageIndex)
 								--Log("_v.allowSkip=".._v.allowSkip)
 								continuousSkipFlag = true
 								if _v.allowSkip ~= true then
@@ -220,10 +227,15 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 				
 				sleep(checkInterval)
 			end
-			sleep(200)
+			
+			CURRENT_PROCESS = PROCESS_NONE
+			--sleep(200)
 		end
 		Log("-------------------------END OF THIS ROUND TASK: "..taskName.."-----------------------")
 	end
+	
+	M.setCurrentTaskStatus("end")
+	CURRENT_TASK = TASK_NONE
 end
 
 return M

@@ -80,7 +80,7 @@ function catchError(errType, errMsg, forceContinueFlag)	--捕获异常，输出�
 			LogError("!!!its will restart app!!!")
 			if runApp(CFG.APP_ID) then
 				LogError("!!!its will restart script 10s later after restart app!!!")
-				setCurrentTaskStatus("restart")
+				task.setCurrentTaskStatus("restart")
 				sleep(10000)
 				lua_restart()
 			else

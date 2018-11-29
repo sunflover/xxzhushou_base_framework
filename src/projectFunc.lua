@@ -6,6 +6,27 @@
 require("func")
 require("page")
 
+function skipInitPage()
+	local startTime = os.time()
+	if page.isCurrentPage(PAGE_INIT) then	--如果为init就点击跳过进入游戏主界面
+		Log("catch PAGE_INIT")
+		sleep(5000)		--等待init界面连网等状态
+		while true do
+			tap(CFG.RESOLUTION.w / 4, CFG.RESOLUTION.h / 4)
+			if page.isCurrentPage(PAGE_INIT) ~= true then	--确认点击init界面生效
+				sleep(3000)
+				break
+			end
+			
+			if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+				catchError(ERR_TIMEOUT, "time out in init page")
+			end
+			sleep(500)
+		end
+		Log("relase PAGE_INIT")
+	end
+end
+
 function switchMainPage(pageName)	--在主界面4个子界面切换
 	if page.isCurrentPage(PAGE_MAIN) ~= true then
 		dialog("请先返回主界面！")
@@ -132,11 +153,13 @@ function processSwitchPlayer()
 	local benchPlayersFirstHalf = getPlayerStatusInfo("benchFirstHalf")	--获取替补席球员信息，显现出的前半部分
 	if #CFG.SUBSTITUTE_INDEX_LIST > 0 then		--将用户的对应关系写入benchPlayersInfo
 		for k, v in pairs(benchPlayersFirstHalf) do
-			v.fieldIndex = CFG.SUBSTITUTE_INDEX_LIST[k]
+			v.fieldIndex = CFG.SUBSTITUTE_INDEX_LIST[k].fieldIndex
+			v.substituteCondition = CFG.SUBSTITUTE_INDEX_LIST[k].substituteCondition
 		end
 	else	--将默认的对应关系写入benchPlayersInfo
 		for k, v in pairs(benchPlayersFirstHalf) do
 			v.fieldIndex = k
+			v.substituteCondition = 0
 		end
 	end
 	
@@ -145,26 +168,27 @@ function processSwitchPlayer()
 	local benchPlayersLatterHalf = getPlayerStatusInfo("benchLatterHalf")	--获取替补席球员信息，未显示的后半部分
 	if #CFG.SUBSTITUTE_INDEX_LIST > 0 then		--将用户的对应关系写入benchPlayersInfo
 		for k, v in pairs(benchPlayersLatterHalf) do
-			v.fieldIndex = CFG.SUBSTITUTE_INDEX_LIST[k + #benchPlayersFirstHalf]
+			v.fieldIndex = CFG.SUBSTITUTE_INDEX_LIST[k + #benchPlayersFirstHalf].fieldIndex
+			v.substituteCondition = CFG.SUBSTITUTE_INDEX_LIST[k + #benchPlayersFirstHalf].substituteCondition
 		end
 	else	--将默认的对应关系写入benchPlayersInfo
 		for k, v in pairs(benchPlayersLatterHalf) do
 			v.fieldIndex = k + #benchPlayersFirstHalf
-			prt(v.fieldIndex)
+			v.substituteCondition = 0
 		end
 	end
 	
 	for k, v in pairs(benchPlayersLatterHalf) do	--先换下半部分的
 		local substituteFlag = false	--是否换过人标志
 		if v.fieldIndex ~= 0 then
-			if CFG.SUBSTITUTE_CONDITION == 0 then	--主力为极差的时候才换
+			if v.substituteCondition == 0 then	--主力为极差的时候才换
 				if fieldPlayers[v.fieldIndex].status == 1 and v.status > 1 then
 					substituteFlag = true
 					touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
 				end
 			else	--根据状态档次替换
 				--Log("v.status="..v.status.."  fieldPlayers.status="..fieldPlayers[v.fieldIndex].status)
-				if v.status - fieldPlayers[v.fieldIndex].status >= CFG.SUBSTITUTE_CONDITION then
+				if v.status - fieldPlayers[v.fieldIndex].status >= v.substituteCondition then
 					substituteFlag = true
 					touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
 				end
@@ -185,14 +209,13 @@ function processSwitchPlayer()
 	for k, v in pairs(benchPlayersFirstHalf) do		--换上半部分
 		local substituteFlag = false	--是否换过人标志
 		if v.fieldIndex ~= 0 then
-			if CFG.SUBSTITUTE_CONDITION == 0 then	--主力为极差的时候才换
+			if v.substituteCondition == 0 then	--主力为极差的时候才换
 				if fieldPlayers[v.fieldIndex].status == 1 and v.status > 1 then
 					substituteFlag = true
 					touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
 				end
 			else	--根据状态档次替换
-				if v.status - fieldPlayers[v.fieldIndex].status >= CFG.SUBSTITUTE_CONDITION then
-					--Log("-----"..fieldPlayers[v.fieldIndex].x.." y="..fieldPlayers[v.fieldIndex].y)
+				if v.status - fieldPlayers[v.fieldIndex].status >= v.substituteCondition then
 					substituteFlag = true
 					touchMoveTo(v.x, v.y, fieldPlayers[v.fieldIndex].x, fieldPlayers[v.fieldIndex].y)
 				end

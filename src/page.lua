@@ -186,4 +186,42 @@ function M.goNextByPoint(x, y)		--通过固定点点击进入下一步
 	tap(x, y)
 end
 
+function M.waitSkipNilPage()		--通过固定点点击进入下一步
+	local startTime = os.time()
+	while true do
+		if page.getCurrentPage() ~= nil then
+			break
+		end
+		
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+			catchError(ERR_TIMEOUT, "time out at wait a not nil page")
+		end
+		sleep(200)
+	end
+end
+
+--检测低可能性出现的界面，通过检测可能界面和next page谁先到来，比起skip page机制，无需等待进入skip流程的时间CFG.WAIT_SKIP_NIL_PAGE
+--originPage，检测之前的界面
+function M.catchFewProbabilityPage(originPage, probabilityPageInfo)
+	local startTime = os.time()
+	while true do
+
+		if page.matchColors(probabilityPageInfo) then	--先出现probabilityPage
+			return true
+		end
+		
+		local currentPage = page.getCurrentPage()
+		if currentPage ~= nil and currentPage ~= originPage then	--先出现新的已定义界面
+			return false
+		end
+		
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+			break	--直接释放
+		end
+		sleep(50)
+	end
+	
+	return false
+end
+
 return M
