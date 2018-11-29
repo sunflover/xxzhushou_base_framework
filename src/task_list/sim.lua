@@ -98,7 +98,7 @@ waitFuncList[PAGE_INTERVAL] = function()
 		lastPlayingPageTime = os.time()
 	end
 	
-	if lastPlayingPageTime > 0 and (os.time() - lastPlayingPageTime >= 4) then	--跳过进球回放什么的
+	if lastPlayingPageTime > 0 and (os.time() - lastPlayingPageTime >= 4) and (os.time() - lastPlayingPageTime <= 10) then	--跳过进球回放什么的
 		tap(CFG.RESOLUTION.w / 4, CFG.RESOLUTION.h / 4)
 		sleep(1000)
 	end
@@ -106,7 +106,7 @@ waitFuncList[PAGE_INTERVAL] = function()
 	if lastPlayingPageTime > 0 then Log("lastPlayingPageTime passed "..(os.time() - lastPlayingPageTime).."s yet")	 end
 	
 	--因为半场为超长时间等待，如果长时间不在playing判定为异常,因为有精彩回放所以超时为两倍
-	if lastPlayingPageTime > 0 and (os.time() - lastPlayingPageTime > CFG.DEFAULT_TIMEOUT * 2) then
+	if lastPlayingPageTime > 0 and (os.time() - lastPlayingPageTime > CFG.DEFAULT_TIMEOUT) then
 		catchError(ERR_TIMEOUT, "cant check playing at wait PAGE_INTERVAL")
 	end
 end
@@ -131,7 +131,7 @@ funcList[PAGE_RANK_UP] = function()
 		"832|515|0x0079fd,789|530|0x0079fd,916|13|0xffffff,247|15|0x000000")
 	
 	--可能会领取天梯奖励
-	if page.catchFewProbabilityPage("441|418|0xcaddf0,518|422|0xcaddf0,470|380|0xf5f5f5,458|463|0xf5f5f5,140|512|0x373737,406|508|0x767677,805|512|0x373737") then
+	if page.catchFewProbabilityPage(PAGE_RANK_UP, "441|418|0xcaddf0,518|422|0xcaddf0,470|380|0xf5f5f5,458|463|0xf5f5f5,140|512|0x373737,406|508|0x767677,805|512|0x373737") then
 		goNextByCatchPoint({228, 365, 735, 474}, "445|421|0xcaddf0,460|381|0xf5f5f5,460|465|0xf5f5f5,234|420|0xf5f5f5,723|422|0xf5f5f5")
 	end
 end

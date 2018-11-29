@@ -229,7 +229,7 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 			end
 			
 			CURRENT_PROCESS = PROCESS_NONE
-			--sleep(200)
+			sleep(50)
 		end
 		Log("-------------------------END OF THIS ROUND TASK: "..taskName.."-----------------------")
 	end

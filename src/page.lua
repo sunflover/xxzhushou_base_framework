@@ -205,11 +205,10 @@ end
 function M.catchFewProbabilityPage(originPage, probabilityPageInfo)
 	local startTime = os.time()
 	while true do
-
 		if page.matchColors(probabilityPageInfo) then	--先出现probabilityPage
 			return true
 		end
-		
+
 		local currentPage = page.getCurrentPage()
 		if currentPage ~= nil and currentPage ~= originPage then	--先出现新的已定义界面
 			return false
