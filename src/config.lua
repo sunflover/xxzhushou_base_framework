@@ -6,21 +6,21 @@
 CFG = {}	--配置文件总表，注册在_G下
 
 -----------------版本信息-----------------
-CFG.VERSION = "v0.1.5"
-CFG.BIULD_TIME = "20181129"
+CFG.VERSION = "v0.1.6"
+CFG.BIULD_TIME = "20181130"
 
 -----------------开发分辨率-----------------
 CFG.RESOLUTION = {w = 540, h = 960}
 
 -----------------调试参数-----------------
-CFG.IS_DEBUG = false		--调试
-CFG.LOG = false				--是否允许输出LOG信息，必须在IS_DEBUG为TRUE的时候有效
-CFG.WRITE_LOG = false		--是否将LOG写入log.txt文件
+CFG.IS_DEBUG = true			--调试
+CFG.LOG = true				--是否允许输出LOG信息，必须在IS_DEBUG为TRUE的时候有效
+CFG.WRITE_LOG = true		--是否将LOG写入log.txt文件
 
 
 -----------------重启脚本及应用参数-----------------
 CFG.ALLOW_BREAKING_TASK = false		--是否允许中断任务
-CFG.ALLOW_RESTART = true			--是否允许重启脚本来解决异常
+CFG.ALLOW_RESTART = false			--是否允许重启脚本来解决异常
 CFG.APP_ID = "com.netease.pes"		--应用名称
 
 
@@ -60,6 +60,7 @@ CFG.SUPPORT_RESOLUTION = {
 	--9:16
 	{540, 960},
 	{720, 1280},
+	{900, 1600},
 	{1080, 1920},
 	{1440, 2560},
 	{640, 1136},

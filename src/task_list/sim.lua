@@ -16,13 +16,13 @@ local taskSim = {
 	process = {
 		{name = PAGE_MAIN, allowSkip = true, justFirstRun = true},
 		{name = PAGE_ONLINE_MATCH, allowSkip = true, justFirstRun = true},
-		{name = PAGE_COACH_RANK},
-		{name = PAGE_MATCHED},
-		{name = PAGE_ROSTER},
-		{name = PAGE_PLAYING},	--无流程，但是用于skip流程
-		{name = PAGE_INTERVAL, timeout = 600, checkInterval = 1000},	--半场需要时间比较就
-		{name = PAGE_INTERVAL_READY},
-		{name = PAGE_INTERVAL, timeout = 600, checkInterval = 1000},	--90分钟结束
+		{name = PAGE_COACH_RANK, allowSkip = true},
+		{name = PAGE_MATCHED, allowSkip = true},
+		{name = PAGE_ROSTER, allowSkip = true},
+		{name = PAGE_PLAYING, timeout = 50},	--无action，但是可用于续接playing状态的断点流程,不允许skip
+		{name = PAGE_INTERVAL, timeout = 600, allowSkip = true, checkInterval = 1000},	--半场需要时间比较就
+		{name = PAGE_INTERVAL_READY, allowSkip = true},
+		{name = PAGE_INTERVAL, timeout = 600, allowSkip = true, checkInterval = 1000},	--90分钟结束
 		
 		{name = PAGE_INTERVAL_READY, allowSkip = true},		--90分钟结束需进入加时赛
 		{name = PAGE_INTERVAL, timeout = 300, allowSkip = true, checkInterval = 500},	--加时赛上半场结束
@@ -87,26 +87,37 @@ funcList[PAGE_INTERVAL] = function()
 end
 
 local lastPlayingPageTime = 0
-local lastProcess = PROCESS_NONE
-waitFuncList[PAGE_INTERVAL] = function()
-	if CURRENT_PROCESS ~= lastProcess then	--当切换流程片时lastPlayingPageTime置零
+local lastProcessIndex = 0
+waitFuncList[PAGE_INTERVAL] = function(processIndex)
+	if processIndex == 15 then		--点球时不检测,不是playing界面
+		Log("on penaltyKick not execute waitFuncList!")
+		return
+	end
+	
+	if processIndex ~= lastProcessIndex then	--当切换流程片时更新
 		lastPlayingPageTime = 0
-		lastProcess = CURRENT_PROCESS
+		lastProcessIndex = processIndex
 	end
 	
 	if page.isCurrentPage(PAGE_PLAYING) then
 		lastPlayingPageTime = os.time()
 	end
 	
-	if lastPlayingPageTime > 0 and (os.time() - lastPlayingPageTime >= 4) and (os.time() - lastPlayingPageTime <= 10) then	--跳过进球回放什么的
-		tap(CFG.RESOLUTION.w / 4, CFG.RESOLUTION.h / 4)
+	if lastPlayingPageTime == 0 then	--未检测到起始playing界面，跳过
+		return
+	end
+	
+	local timeAfterLastPlayingPage = os.time() - lastPlayingPageTime	--距离最后一个playing界面的时间间隔
+	
+	if timeAfterLastPlayingPage >= 4 and timeAfterLastPlayingPage <= 10 and isAppRunning() then	--跳过进球回放什么的,--游戏崩溃的情况下不点击
+		tap(CFG.RESOLUTION.w / 2, CFG.RESOLUTION.h / 2)
 		sleep(1000)
 	end
 	
-	if lastPlayingPageTime > 0 then Log("lastPlayingPageTime passed "..(os.time() - lastPlayingPageTime).."s yet")	 end
+	if lastPlayingPageTime > 0 then Log("timeAfterLastPlayingPage = "..timeAfterLastPlayingPage.."s yet")	 end
 	
-	--因为半场为超长时间等待，如果长时间不在playing判定为异常,因为有精彩回放所以超时为两倍
-	if lastPlayingPageTime > 0 and (os.time() - lastPlayingPageTime > CFG.DEFAULT_TIMEOUT) then
+	--因为半场为超长时间等待，如果长时间不在playing判定为异常,因为有精彩回放所以超时为两倍(还有点球)
+	if timeAfterLastPlayingPage > CFG.DEFAULT_TIMEOUT * 1.5 then
 		catchError(ERR_TIMEOUT, "cant check playing at wait PAGE_INTERVAL")
 	end
 end
@@ -132,7 +143,7 @@ funcList[PAGE_RANK_UP] = function()
 	
 	--可能会领取天梯奖励
 	if page.catchFewProbabilityPage(PAGE_RANK_UP, "441|418|0xcaddf0,518|422|0xcaddf0,470|380|0xf5f5f5,458|463|0xf5f5f5,140|512|0x373737,406|508|0x767677,805|512|0x373737") then
-		goNextByCatchPoint({228, 365, 735, 474}, "445|421|0xcaddf0,460|381|0xf5f5f5,460|465|0xf5f5f5,234|420|0xf5f5f5,723|422|0xf5f5f5")
+		page.goNextByCatchPoint({228, 365, 735, 474}, "445|421|0xcaddf0,460|381|0xf5f5f5,460|465|0xf5f5f5,234|420|0xf5f5f5,723|422|0xf5f5f5")
 	end
 end
 

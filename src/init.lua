@@ -28,13 +28,17 @@ local function parseUserSetting(uiParam)
 	
 	if uiParam.radioSubstitute.开启 == true then		--开场换人开关
 		CFG.ALLOW_SUBSTITUTE = true
-		setStringConfig("ALLOW_SUBSTITUTE", tostring(CFG.ALLOW_SUBSTITUTE))
+	else
+		CFG.ALLOW_SUBSTITUTE = false
 	end
+	setStringConfig("ALLOW_SUBSTITUTE", tostring(CFG.ALLOW_SUBSTITUTE))
 	
 	if uiParam.radioRestart.开启 == true then		--崩溃自动重启开关
 		CFG.ALLOW_RESTART = true
-		setStringConfig("ALLOW_RESTART", tostring(CFG.ALLOW_RESTART))
+	else
+		CFG.ALLOW_RESTART = false
 	end
+	setStringConfig("ALLOW_RESTART", tostring(CFG.ALLOW_RESTART))
 	
 	if type(uiParam.editerCircleTimes) == "number" then	--循环次数
 		CFG.REPEAT_TIMES = uiParam.editerCircleTimes
@@ -147,7 +151,7 @@ local function parseUserSetting(uiParam)
 end
 
 local function loadLastUserSetting()		--加载重启前的UI设置参数
-	CFG.ALLOW_SUBSTITUTE = (getStringConfig("ALLOW_SUBSTITUTE", "true") == "true") == false or true
+	CFG.ALLOW_SUBSTITUTE = (getStringConfig("ALLOW_SUBSTITUTE", "false") == "true") == false or true
 	CFG.ALLOW_RESTART = (getStringConfig("ALLOW_RESTART", "false") == "true") == false or true
 	CFG.REPEAT_TIMES = tonumber(getStringConfig("REPEAT_TIMES", tostring(CFG.DEFAULT_REPEAT_TIMES)))
 	

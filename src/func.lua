@@ -5,10 +5,19 @@
 
 local lastTap={x = 0, y = 0, delay = 0}
 
+function isAppRunning()
+	local status = appIsRunning(CFG.APP_ID)
+	if status == 1 then
+		return true
+	end
+	
+	return false
+end
+
 local function writeLog(content)		--写日志文件
 	local file = io.open(CFG.PATH_LOG, "a")
 	if file then
-		file:write(content)
+		file:write(content.."\r\n")
 		io.close(file)
 	end
 end

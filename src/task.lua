@@ -92,7 +92,7 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 			
 			if os.time() - startTime > CFG.WAIT_SKIP_NIL_PAGE then
 				Log("always still a nil page, please skip it")
-				--dialog("always still a nil page, please skip it")
+				dialog("always still a nil page, please skip it")
 				startTime = os.time()
 				while true do
 					if page.getCurrentPage() then
@@ -152,8 +152,6 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 			local checkInterval = v.checkInterval or CFG.DEFAULT_PAGE_CHECK_INTERVAL
 			local timeout = v.timeout or CFG.DEFAULT_TIMEOUT
 			local startTime = getCurrentTime()
-
-			CURRENT_PROCESS = v.name
 			
 			while true do
 				--Log("now wait process page: "..v.name)
@@ -175,12 +173,15 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 						firstRunProcess = false
 					end
 					break
+				--else
+				--	Log("cant find page "..v.name)
 				end
 				
-				if v.waitFunc ~= nil then --等待期间执行的prroces的等待函数
-					v.waitFunc()
+				if v.waitFunc ~= nil then --等待期间执行的process的等待函数
+					v.waitFunc(k)
 				end
 				
+				Log(k.." -- wait current process has : "..(getCurrentTime() - startTime))
 				if getCurrentTime() - startTime > timeout then	--流程超时
 					catchError(ERR_TIMEOUT, "have waitting process: "..v.name.." "..tostring(getCurrentTime()-startTime).."s yet, try end it")
 				end
@@ -228,7 +229,6 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 				sleep(checkInterval)
 			end
 			
-			CURRENT_PROCESS = PROCESS_NONE
 			sleep(50)
 		end
 		Log("-------------------------END OF THIS ROUND TASK: "..taskName.."-----------------------")
