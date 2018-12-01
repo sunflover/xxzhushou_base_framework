@@ -1,0 +1,4 @@
+-- simLeague.lua
+-- Author: cndy1860
+-- Date: 2018-11-30
+-- function: 实况联赛教练模式

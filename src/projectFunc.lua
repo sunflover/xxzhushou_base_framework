@@ -70,12 +70,13 @@ local function getFixStatusPlayers(area, status)	--获取某种状态的所有�
 	elseif status == "worse" then	--状态极差
 		colorStr = "467|452|0x3c0e0e,492|452|0x3c0e0e,492|477|0x3c0e0e,468|477|0x3c0e0e,480|465|0xb90000"
 	elseif status == "normal" then	--状态一般
-		colorStr = "467|452|0x363000,492|452|0x363000,492|477|0x363000,468|477|0x363000,480|465|0xc4bc00"
+		colorStr = "467|452|0x363000,492|452|0x363000,492|477|0x363000,468|477|0x363000,487|465|0xc4bc00"
 	else
 		catchError(ERR_PARAM, "get a worong status in getFixStatusPlayers")
 	end
 	
 	local points = findColors(area, colorStr, 95, 0, 0, 0)
+	
 	if #points == 0 then
 		Log("cant find point on :"..status)
 		return playerStatusInfo
@@ -93,6 +94,10 @@ local function getFixStatusPlayers(area, status)	--获取某种状态的所有�
 		if exsitFlag == false then
 			table.insert(playerStatusInfo, v)
 		end
+	end
+	
+	if #points >= 99 then	--超过points最大容量99个点意味着可能没有找完所有位置的状态
+		catchError(ERR_PARAM, "get more than 99 point, maybe not cath all posation")
 	end
 	
 	prt("status: "..status.." count "..#playerStatusInfo)
@@ -143,11 +148,17 @@ end
 
 function processSwitchPlayer()
 	tap(609,491)	--切换状态界面
-	sleep(1000)	--一定要留够时间
+	sleep(1000)	--会有"状态"二字出现，挡住球员，等待消失，一定要留够时间
 	local fieldPlayers = getPlayerStatusInfo("field")	--获取场上球员信息
-	prt(fieldPlayers)
+	if #fieldPlayers ~= 11 then 	--未找到全部11个换人
+		sleep(1000)
+		fieldPlayers = getPlayerStatusInfo("field")	--再次获取场上球员信息，防止因为切换时“状态”二字挡住影响
+		if #fieldPlayers ~= 11 then
+			catchError(ERR_PARAM, "did not get 11 fiedl player, just "..#fieldPlayers)
+		end
+	end
 	
-	tap(68,314)		--打开贴补席
+	tap(68,314)		--打开替补席
 	sleep(500)
 	
 	local benchPlayersFirstHalf = getPlayerStatusInfo("benchFirstHalf")	--获取替补席球员信息，显现出的前半部分

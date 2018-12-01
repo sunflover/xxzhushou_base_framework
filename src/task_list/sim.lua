@@ -110,7 +110,7 @@ waitFuncList[PAGE_INTERVAL] = function(processIndex)
 	local timeAfterLastPlayingPage = os.time() - lastPlayingPageTime	--距离最后一个playing界面的时间间隔
 	
 	if timeAfterLastPlayingPage >= 4 and timeAfterLastPlayingPage <= 10 and isAppRunning() then	--跳过进球回放什么的,--游戏崩溃的情况下不点击
-		tap(CFG.RESOLUTION.w / 2, CFG.RESOLUTION.h / 2)
+		tap(10, 10)
 		sleep(1000)
 	end
 	

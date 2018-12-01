@@ -25,6 +25,9 @@ function main()
 end
 
 xpcall(main(), catchError(ERR_MAIN, "main err"))
---init(0,1)
---setScreenScale(540,960)
---if page.getCurrentPage() ~= nil then page.getCurrentPage() end
+init(0,1)
+setScreenScale(540,960)
+if page.getCurrentPage() ~= nil then page.getCurrentPage() end
+loadLastUserSetting()
+sleep(2000)
+processSwitchPlayer()

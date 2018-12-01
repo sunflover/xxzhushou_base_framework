@@ -150,7 +150,7 @@ local function parseUserSetting(uiParam)
 	return true
 end
 
-local function loadLastUserSetting()		--加载重启前的UI设置参数
+function loadLastUserSetting()		--加载重启前的UI设置参数
 	CFG.ALLOW_SUBSTITUTE = (getStringConfig("ALLOW_SUBSTITUTE", "false") == "true") == false or true
 	CFG.ALLOW_RESTART = (getStringConfig("ALLOW_RESTART", "false") == "true") == false or true
 	CFG.REPEAT_TIMES = tonumber(getStringConfig("REPEAT_TIMES", tostring(CFG.DEFAULT_REPEAT_TIMES)))

@@ -141,11 +141,11 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 			end
 		end
 		
-		local waitCheckSipTime = 0
+		local waitCheckSkipTime = 0
 		if i == i then		--第一次运行就快速检测是否可以跳过主界面
 			waitCheckSipTime = 1
 		else
-			waitCheckSipTime = CFG.WAIT_CHECK_SKIP
+			waitCheckSkipTime = CFG.WAIT_CHECK_SKIP
 		end
 		
 		for k, v in pairs(taskProcess) do
@@ -186,14 +186,14 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 					catchError(ERR_TIMEOUT, "have waitting process: "..v.name.." "..tostring(getCurrentTime()-startTime).."s yet, try end it")
 				end
 				
-				if getCurrentTime() - startTime > waitCheckSipTime then	--跳过
+				if getCurrentTime() - startTime > waitCheckSkipTime then	--跳过
 					local currentPage = page.getCurrentPage()
 					if currentPage ~= nil and currentPage ~= PAGE_NONE then
 						local isProcessPage = false
 						local pageIndex = 0
 						for _k, _v in pairs(taskProcess) do
 							if _v.name == currentPage then	--当前界面确认处于流程中某界面
-								--Log("have a not current process page")
+								Log("have a not current process page")
 								isProcessPage = true
 								pageIndex = _k
 								break
@@ -203,9 +203,9 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 						local continuousSkipFlag = false
 						for _k, _v in pairs(taskProcess) do
 							if _k >= k and _k < pageIndex then	--从当前流程界面至当前实际界面均存在skip才可能是正常skip流程
-								--Log("have a part at currentProcessPage to currentPage")
-								--Log("k="..k.." pageIndex="..pageIndex)
-								--Log("_v.allowSkip=".._v.allowSkip)
+								Log("have a part at currentProcessPage to currentPage")
+								Log("k="..k.." pageIndex="..pageIndex)
+								Log("_v.allowSkip="..tostring(_v.allowSkip))
 								continuousSkipFlag = true
 								if _v.allowSkip ~= true then
 									Log("continuousSkipFlag break")
