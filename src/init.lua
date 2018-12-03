@@ -26,12 +26,27 @@ local function parseUserSetting(uiParam)
 	end
 	prt(retParam)
 	
+	if uiParam.radioCoachMode.联赛 == true then		--开场换人开关
+		CURRENT_TASK = TASK_LEAGUE_SIM
+	elseif uiParam.radioCoachMode.天梯 == true then
+		CURRENT_TASK = TASK_SIM
+	else
+		CURRENT_TASK = TASK_NONE
+	end
+	
 	if uiParam.radioSubstitute.开启 == true then		--开场换人开关
 		CFG.ALLOW_SUBSTITUTE = true
 	else
 		CFG.ALLOW_SUBSTITUTE = false
 	end
 	setStringConfig("ALLOW_SUBSTITUTE", tostring(CFG.ALLOW_SUBSTITUTE))
+	
+	if uiParam.radioRefreshConctract.开启 == true then		--自动续约
+		CFG.REFRESH_CONCTRACT = true
+	else
+		CFG.REFRESH_CONCTRACT = false
+	end
+	setStringConfig("REFRESH_CONCTRACT", tostring(CFG.REFRESH_CONCTRACT))
 	
 	if uiParam.radioRestart.开启 == true then		--崩溃自动重启开关
 		CFG.ALLOW_RESTART = true
@@ -151,8 +166,10 @@ local function parseUserSetting(uiParam)
 end
 
 function loadLastUserSetting()		--加载重启前的UI设置参数
+	CFG.APP_ID = getStringConfig("APP_ID", CFG.DEFAULT_APP_ID)
 	CFG.ALLOW_SUBSTITUTE = (getStringConfig("ALLOW_SUBSTITUTE", "false") == "true") == false or true
 	CFG.ALLOW_RESTART = (getStringConfig("ALLOW_RESTART", "false") == "true") == false or true
+	CFG.REFRESH_CONCTRACT = (getStringConfig("REFRESH_CONCTRACT", "false") == "true") == false or true
 	CFG.REPEAT_TIMES = tonumber(getStringConfig("REPEAT_TIMES", tostring(CFG.DEFAULT_REPEAT_TIMES)))
 	
 	CFG.SUBSTITUTE_INDEX_LIST[1].fieldIndex = tonumber(getStringConfig("SUBSTITUTE_INDEX_1", "0"))
@@ -193,6 +210,24 @@ function initEnv()		--初始化
 		dialog("不支持的分辨率，请联系作者适配")
 		lua_exit()
 	end
+	
+	local appid = frontAppName()
+	if appid == nil then
+		dialog("请先打开实况足球再开启脚本")
+		lua_exit()
+	else
+		if appid ~= CFG.APP_ID then
+			if string.find(appid, CFG.APP_ID) == nil then
+				dialog("请先打开实况足球再开启脚本")
+				lua_exit()
+			else
+				CFG.APP_ID = appid
+			end
+		end
+		setStringConfig("APP_ID", CFG.APP_ID)
+	end
+	
+	Log(CFG.APP_ID)
 	
 	local w, h = CFG.RESOLUTION.w, CFG.RESOLUTION.h
 	setScreenScale((w <= h) and w or h, (w > h) and w or h)

@@ -57,7 +57,7 @@ funcList[PAGE_COACH_RANK] = function()
 		"823|511|0x0079fd,950|494|0x0079fd,943|526|0x0079fd,789|526|0x0079fd,765|507|0x696969")
 	
 	--低概率出现，不加入skip机制，skip机制需要等待CFG.WAIT_SKIP_NIL_PAGE时间后才能进入
-	if page.catchFewProbabilityPage(PAGE_COACH_RANK, "439|168|0xf5f5f5,442|182|0xdedede,411|276|0xffffff,408|315|0xdedede,401|361|0xcaddf0") then
+	if page.catchFewProbabilityPage(PAGE_COACH_RANK, "439|168|0xf5f5f5,442|182|0xdedede,411|276|0xffffff,408|315|0xdedede,401|361|0xcaddf0") == 1 then
 		page.goNextByCatchPoint({208, 281, 749, 442}, "434|374|0xcaddf0,233|358|0xcaddf0,715|387|0xcaddf0,464|333|0xf5f5f5")
 		dialog("能量不足，请退出")
 		catchError(ERR_TASK_ABORT, "能量不足将退出")
@@ -142,7 +142,7 @@ funcList[PAGE_RANK_UP] = function()
 		"832|515|0x0079fd,789|530|0x0079fd,916|13|0xffffff,247|15|0x000000")
 	
 	--可能会领取天梯奖励
-	if page.catchFewProbabilityPage(PAGE_RANK_UP, "441|418|0xcaddf0,518|422|0xcaddf0,470|380|0xf5f5f5,458|463|0xf5f5f5,140|512|0x373737,406|508|0x767677,805|512|0x373737") then
+	if page.catchFewProbabilityPage(PAGE_RANK_UP, "441|418|0xcaddf0,518|422|0xcaddf0,470|380|0xf5f5f5,458|463|0xf5f5f5,140|512|0x373737,406|508|0x767677,805|512|0x373737") == 1 then
 		page.goNextByCatchPoint({228, 365, 735, 474}, "445|421|0xcaddf0,460|381|0xf5f5f5,460|465|0xf5f5f5,234|420|0xf5f5f5,723|422|0xf5f5f5")
 	end
 end

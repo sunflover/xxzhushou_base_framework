@@ -74,6 +74,7 @@ function catchError(errType, errMsg, forceContinueFlag)	--捕获异常，输出�
 		return
 	end
 	if etype == ERR_MAIN or etype == ERR_TASK_ABORT then	--核心错误仅允许exit
+		dialog(errMsg, 200)
 		LogError("!!!cant recover task, program will end now!!!")
 		lua_exit()
 	elseif etype == ERR_FILE or etype == ERR_PARAM then	--关键错误仅允许exit
@@ -82,6 +83,7 @@ function catchError(errType, errMsg, forceContinueFlag)	--捕获异常，输出�
 	elseif etype == ERR_WARNING then		--警告任何时候只提示
 		LogError("!!!maybe some err in here, care it!!!")
 	elseif etype == ERR_TIMEOUT then		--超时错误允许exit，restart
+		dialog(errMsg, 200)
 		if CFG.ALLOW_RESTART == true then
 			LogError("!!!its will close app!!!")
 			closeApp(CFG.APP_ID);

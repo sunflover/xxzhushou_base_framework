@@ -113,7 +113,6 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 		end
 	end
 	
-	CURRENT_TASK = taskName
 	M.setCurrentTaskStatus("start")
 	
 	for k, v in pairs(taskProcess) do	--第一次运行可能是重启过应用，允许直接跳转至任何流程片
@@ -235,7 +234,6 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 	end
 	
 	M.setCurrentTaskStatus("end")
-	CURRENT_TASK = TASK_NONE
 end
 
 return M

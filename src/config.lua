@@ -22,6 +22,7 @@ CFG.WRITE_LOG = true		--是否将LOG写入log.txt文件
 CFG.ALLOW_BREAKING_TASK = false		--是否允许中断任务
 CFG.ALLOW_RESTART = false			--是否允许重启脚本来解决异常
 CFG.APP_ID = "com.netease.pes"		--应用名称
+CFG.DEFAULT_APP_ID = "com.netease.pes"
 
 
 -----------------文件路径-----------------
@@ -52,6 +53,7 @@ CFG.TOUCH_MOVE_STEP = 50	--touchMoveTo的移动步长
 -----------------用户设置-----------------
 CFG.ALLOW_SUBSTITUTE = false		--是否允许开场换人
 CFG.SUBSTITUTE_INDEX_LIST = {{},{},{},{},{},{},{}}		--替补席对应关系表
+CFG.REFRESH_CONCTRACT = false
 CFG.REPEAT_TIMES = 0				--任务循环次数
 CFG.DEFAULT_REPEAT_TIMES = 10		--任务默认运行次数
 

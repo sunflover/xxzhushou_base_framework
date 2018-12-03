@@ -9,7 +9,7 @@ require("func")
 require("task")
 require("page")
 require("task_list/sim")
-require("task_list/test")
+require("task_list/leagueSim")
 
 
 function main()
@@ -19,7 +19,7 @@ function main()
 	
 	skipInitPage()	--跳过init界面
 	
-	task.run(TASK_SIM, CFG.REPEAT_TIMES)
+	task.run(CURRENT_TASK, CFG.REPEAT_TIMES)
 	
 	lua_exit()
 end
@@ -27,7 +27,10 @@ end
 xpcall(main(), catchError(ERR_MAIN, "main err"))
 init(0,1)
 setScreenScale(540,960)
-if page.getCurrentPage() ~= nil then page.getCurrentPage() end
-loadLastUserSetting()
-sleep(2000)
-processSwitchPlayer()
+--if page.getCurrentPage() ~= nil then dialog(page.getCurrentPage()) else dialog("手机即将爆炸，快找作者反馈") end
+--dialog(CFG.APP_ID)
+--loadLastUserSetting()
+sleep(3000)
+--processFreshPlayerContract()
+--processSwitchPlayer()
+processFreshPlayerContract()
