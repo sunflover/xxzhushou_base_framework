@@ -14,7 +14,7 @@ require("task_list/leagueSim")
 
 function main()
 	initEnv()		--初始化用户参数，UI
-	
+
 	page.waitSkipNilPage()	--跳过启动应用时的过度动画
 	
 	skipInitPage()	--跳过init界面
@@ -27,10 +27,8 @@ end
 xpcall(main(), catchError(ERR_MAIN, "main err"))
 init(0,1)
 setScreenScale(540,960)
---if page.getCurrentPage() ~= nil then dialog(page.getCurrentPage()) else dialog("手机即将爆炸，快找作者反馈") end
---dialog(CFG.APP_ID)
+--if page.getCurrentPage() ~= nil then dialog(page.getCurrentPage()) else Log("手机即将爆炸，快找作者反馈") end
+--dialog(CFG.APP_ID)  
 --loadLastUserSetting()
 sleep(3000)
---processFreshPlayerContract()
---processSwitchPlayer()
-processFreshPlayerContract()
+processSwitchPlayer()

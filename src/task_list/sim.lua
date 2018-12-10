@@ -14,25 +14,25 @@ local M = {}
 local taskSim = {
 	name = TASK_SIM,
 	process = {
-		{name = PAGE_MAIN, allowSkip = true, justFirstRun = true},
-		{name = PAGE_ONLINE_MATCH, allowSkip = true, justFirstRun = true},
-		{name = PAGE_COACH_RANK, allowSkip = true},
-		{name = PAGE_MATCHED, allowSkip = true},
-		{name = PAGE_ROSTER, allowSkip = true},
+		{name = PAGE_MAIN, justFirstRun = true},
+		{name = PAGE_ONLINE_MATCH, justFirstRun = true},
+		{name = PAGE_COACH_RANK},
+		{name = PAGE_MATCHED},
+		{name = PAGE_ROSTER},
 		{name = PAGE_PLAYING, timeout = 50},	--无action，但是可用于续接playing状态的断点流程,不允许skip
-		{name = PAGE_INTERVAL, timeout = 600, allowSkip = true, checkInterval = 1000},	--半场需要时间比较就
-		{name = PAGE_INTERVAL_READY, allowSkip = true},
-		{name = PAGE_INTERVAL, timeout = 600, allowSkip = true, checkInterval = 1000},	--90分钟结束
+		{name = PAGE_INTERVAL, timeout = 600, checkInterval = 1000},	--半场需要时间比较就
+		{name = PAGE_INTERVAL_READY},
+		{name = PAGE_INTERVAL, timeout = 600, checkInterval = 1000},	--90分钟结束
 		
-		{name = PAGE_INTERVAL_READY, allowSkip = true},		--90分钟结束需进入加时赛
-		{name = PAGE_INTERVAL, timeout = 300, allowSkip = true, checkInterval = 500},	--加时赛上半场结束
-		{name = PAGE_INTERVAL_READY, allowSkip = true},
-		{name = PAGE_INTERVAL, timeout = 300, allowSkip = true, checkInterval = 500},	--加时赛下半场结束需点球
-		{name = PAGE_INTERVAL_READY, allowSkip = true},
-		{name = PAGE_INTERVAL, timeout = 300, allowSkip = true, checkInterval = 500},	--点球结束
+		{name = PAGE_INTERVAL_READY},		--90分钟结束需进入加时赛
+		{name = PAGE_INTERVAL, timeout = 300, checkInterval = 500},	--加时赛上半场结束
+		{name = PAGE_INTERVAL_READY},
+		{name = PAGE_INTERVAL, timeout = 300, checkInterval = 500},	--加时赛下半场结束需点球
+		{name = PAGE_INTERVAL_READY},
+		{name = PAGE_INTERVAL, timeout = 300, checkInterval = 500},	--点球结束
 		
 		{name = PAGE_END_READY},
-		{name = PAGE_OFFLINE_FAIL, allowSkip = true, justFirstRun = true},
+		{name = PAGE_OFFLINE_FAIL, justFirstRun = true},
 		{name = PAGE_RANK_UP},
 	}
 }
@@ -53,9 +53,11 @@ funcList[PAGE_ONLINE_MATCH] = function()
 end
 
 funcList[PAGE_COACH_RANK] = function()
-	page.goNextByCatchPoint({751, 476, 955, 534},
-		"823|511|0x0079fd,950|494|0x0079fd,943|526|0x0079fd,789|526|0x0079fd,765|507|0x696969")
-	
+	sleep(200)
+	--page.goNextByCatchPoint({751, 476, 955, 534},
+	--	"823|511|0x0079fd,950|494|0x0079fd,943|526|0x0079fd,789|526|0x0079fd,765|507|0x696969")
+	page.goNextByCatchPoint({753, 469, 957, 533},
+		"828|520|0x0079fd,782|528|0x0079fd,804|501|0x0079fd,937|526|0x0079fd")
 	--低概率出现，不加入skip机制，skip机制需要等待CFG.WAIT_SKIP_NIL_PAGE时间后才能进入
 	if page.catchFewProbabilityPage(PAGE_COACH_RANK, "439|168|0xf5f5f5,442|182|0xdedede,411|276|0xffffff,408|315|0xdedede,401|361|0xcaddf0") == 1 then
 		page.goNextByCatchPoint({208, 281, 749, 442}, "434|374|0xcaddf0,233|358|0xcaddf0,715|387|0xcaddf0,464|333|0xf5f5f5")
@@ -110,7 +112,7 @@ waitFuncList[PAGE_INTERVAL] = function(processIndex)
 	local timeAfterLastPlayingPage = os.time() - lastPlayingPageTime	--距离最后一个playing界面的时间间隔
 	
 	if timeAfterLastPlayingPage >= 4 and timeAfterLastPlayingPage <= 10 and isAppRunning() then	--跳过进球回放什么的,--游戏崩溃的情况下不点击
-		tap(10, 10)
+		tap(10, 60)
 		sleep(1000)
 	end
 	
@@ -141,8 +143,11 @@ funcList[PAGE_RANK_UP] = function()
 	page.goNextByCatchPoint({15, 0, 943, 532},
 		"832|515|0x0079fd,789|530|0x0079fd,916|13|0xffffff,247|15|0x000000")
 	
+	page.catchFewProbabilityPage(PAGE_COACH_RANK, "441|418|0xcaddf0,518|422|0xcaddf0,470|380|0xf5f5f5,458|463|0xf5f5f5,140|512|0x373737,406|508|0x767677,805|512|0x373737")
+	sleep(1000)
+	
 	--可能会领取天梯奖励
-	if page.catchFewProbabilityPage(PAGE_RANK_UP, "441|418|0xcaddf0,518|422|0xcaddf0,470|380|0xf5f5f5,458|463|0xf5f5f5,140|512|0x373737,406|508|0x767677,805|512|0x373737") == 1 then
+	if page.catchFewProbabilityPage(PAGE_COACH_RANK, "441|418|0xcaddf0,518|422|0xcaddf0,470|380|0xf5f5f5,458|463|0xf5f5f5,140|512|0x373737,406|508|0x767677,805|512|0x373737") == 1 then
 		page.goNextByCatchPoint({228, 365, 735, 474}, "445|421|0xcaddf0,460|381|0xf5f5f5,460|465|0xf5f5f5,234|420|0xf5f5f5,723|422|0xf5f5f5")
 	end
 end

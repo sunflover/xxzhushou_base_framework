@@ -8,8 +8,6 @@ local strFind = string.find
 local strLen = string.len
 local tbInsert = table.insert
 
-local index = 1		--words索引，用于顺序获取单词
-
 local modName = "dict"
 local M = {}
 
@@ -471,10 +469,25 @@ M.words = {					--词库，源自四六级单词，4K+
 }
 
 
-function M.getWord()	--顺序获取一个单词,每次均从第一个开始
-	local wd = M.words[index]
-	index = index + 1
-	return wd
+local function getLastWordIndex()
+	local index = tonumber(getStringConfig("WORD_INDEX", "0"))
+	if index > #M.words then	--当超出索引就置零
+		updateWordIndex(0)
+		index = tonumber(getStringConfig("WORD_INDEX", "0"))
+	end
+	return index
+end
+
+local function updateWordIndex(index)
+	setStringConfig("WORD_INDEX", tostring(index))
+end
+
+function M.getAWord()	--顺序获取一个单词
+	local lastIndex = getLastWordIndex()
+	
+	updateWordIndex(lastIndex + 1)
+
+	return M.words[lastIndex + 1]
 end
 
 function M.getRandomWord()	--获取一个随机单词

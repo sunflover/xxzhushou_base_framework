@@ -70,9 +70,9 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 	local reTimes = repeatTimes or 1
 	local firstRunProcess = true
 	local breakTaskFlag = breakPointFlag ~= false
-	local allowSkipBackup = {}
 	
 	if M.isExistTask(taskName) ~= true then		--检查任务是否存在
+		M.setCurrentTaskStatus("end")	--清空断点任务状态，防止错误卡死
 		catchError(ERR_PARAM, "have no task: "..taskName)
 	end
 	
@@ -83,60 +83,41 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 	
 	if page.getCurrentPage() == nil then	--等待获取一个已定义界面(非过度界面)
 		Log("waiting until catch a not nil page")
-		local continueFlag = true
 		local startTime = os.time()
 		while true do
 			if page.getCurrentPage() then
 				break
 			end
 			
-			if os.time() - startTime > CFG.WAIT_SKIP_NIL_PAGE then
-				Log("always still a nil page, please skip it")
-				dialog("always still a nil page, please skip it")
-				startTime = os.time()
-				while true do
-					if page.getCurrentPage() then
-						continueFlag = false
-						break
-					end
-					if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
-						catchError(ERR_TIMEOUT, "still start from a unkown page! can not work!")
-					end
-					sleep(200)
-				end
+			if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+				catchError(ERR_TIMEOUT, "still start from a unkown page! can not work!")
 			end
 			
-			if continueFlag == false then
-				break
-			end
 			sleep(200)
 		end
 	end
 	
 	M.setCurrentTaskStatus("start")
 	
-	for k, v in pairs(taskProcess) do	--第一次运行可能是重启过应用，允许直接跳转至任何流程片
-		table.insert(allowSkipBackup, v.allowSkip)	--备份原allowSkip属性
-		v.allowSkip = true
-	end
-	
 	for i = 1, reTimes, 1 do
-		Log("-----------------------START RUN A ROUND OF TASK: "..taskName.."-----------------------")		
-		for k, v in pairs(taskProcess) do	
-			if i == 1 then	--首次运行默认均不跳过
-				v.skipStatus = false
-			else	--非首次运行跳过仅首次运行的流程片
-				if v.justFirstRun then	--只允许首次运行的流程片
+		Log("-----------------------START RUN A ROUND OF TASK: "..taskName.."-----------------------")
+		for k, v in pairs(taskProcess) do
+			if i == 1 then	--首次运行断点流程(断点未发生的情况下)均不跳过
+				if v.justBreakingRun == true then
+					if IS_BREAKING_TASK then
+						v.skipStatus = false
+					else
+						v.skipStatus = true
+					end
+				else
+					v.skipStatus = false
+				end
+			else	--非首次运行跳过仅首次运行和续接断点流程片的流程片
+				if v.justFirstRun or v.justBreakingRun then	--跳过只允许首次运行的流程片和断点流程片
 					v.skipStatus = true
 				else
 					v.skipStatus = false
 				end
-			end
-		end
-		
-		if i == 2 then
-			for k, v in pairs(taskProcess) do	--第一次运行过后恢复原来的allowSkip属性
-				v.allowSkip = allowSkipBackup[k]
 			end
 		end
 		
@@ -150,8 +131,8 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 		for k, v in pairs(taskProcess) do
 			local checkInterval = v.checkInterval or CFG.DEFAULT_PAGE_CHECK_INTERVAL
 			local timeout = v.timeout or CFG.DEFAULT_TIMEOUT
-			local startTime = getCurrentTime()
 			
+			local startTime = getCurrentTime()
 			while true do
 				--Log("now wait process page: "..v.name)
 				if v.skipStatus == true then	--跳过当前界面流程
@@ -171,9 +152,8 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 					if firstRunProcess then		--执行过一个流程后就不再考虑存在断点任务
 						firstRunProcess = false
 					end
-					break
-				--else
-				--	Log("cant find page "..v.name)
+					
+					break	--完成当前流程片
 				end
 				
 				if v.waitFunc ~= nil then --等待期间执行的process的等待函数
@@ -191,34 +171,12 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 						local isProcessPage = false
 						local pageIndex = 0
 						for _k, _v in pairs(taskProcess) do
-							if _v.name == currentPage then	--当前界面确认处于流程中某界面
-								Log("have a not current process page")
-								isProcessPage = true
-								pageIndex = _k
-								break
-							end
-						end
-						
-						local continuousSkipFlag = false
-						for _k, _v in pairs(taskProcess) do
-							if _k >= k and _k < pageIndex then	--从当前流程界面至当前实际界面均存在skip才可能是正常skip流程
-								Log("have a part at currentProcessPage to currentPage")
-								Log("k="..k.." pageIndex="..pageIndex)
-								Log("_v.allowSkip="..tostring(_v.allowSkip))
-								continuousSkipFlag = true
-								if _v.allowSkip ~= true then
-									Log("continuousSkipFlag break")
-									continuousSkipFlag = false
-									break
-								end
-							end
-						end
-						
-						if continuousSkipFlag == true then
-							Log("have a can skip page")
-							for _k, _v in pairs(taskProcess) do
-								if _k >= k and _k < pageIndex then	--从当前流程界面至当前实际界面前一个均存在skip才可能是正常skip流程
-									_v.skipStatus = true
+							if _v.name == currentPage then	--当前界面为其后的某个流程片中界面
+								Log("set it skip between current process page and a next process page")
+								for __k, __v  in pairs(taskProcess) do
+									if __k >= k and __k < _k then
+										__v.skipStatus = true
+									end
 								end
 							end
 						end

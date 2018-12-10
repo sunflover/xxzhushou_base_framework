@@ -6,8 +6,8 @@
 local lastTap={x = 0, y = 0, delay = 0}
 
 function isAppRunning()
-	local status = appIsRunning(CFG.APP_ID)
-	if status == 1 then
+	local appName = frontAppName()
+	if appName == CFG.APP_ID then
 		return true
 	end
 	
@@ -15,14 +15,18 @@ function isAppRunning()
 end
 
 local function writeLog(content)		--写日志文件
+	if content == nil then
+		return
+	end
+	
 	local file = io.open(CFG.PATH_LOG, "a")
 	if file then
-		file:write(content.."\r\n")
+		file:write("["..os.date("%d %H:%M:%S", os.time()).."]"..content.."\r\n")
 		io.close(file)
 	end
 end
 
-function Log(content)		--打印log
+function Log(content)		--打印log，允许content = nil的情况，用于排错
 	if CFG.WRITE_LOG == true then
 		writeLog(content)
 	end
@@ -74,7 +78,7 @@ function catchError(errType, errMsg, forceContinueFlag)	--捕获异常，输出�
 		return
 	end
 	if etype == ERR_MAIN or etype == ERR_TASK_ABORT then	--核心错误仅允许exit
-		dialog(errMsg, 200)
+		dialog(errMsg.."\r\n即将退出", 5)
 		LogError("!!!cant recover task, program will end now!!!")
 		lua_exit()
 	elseif etype == ERR_FILE or etype == ERR_PARAM then	--关键错误仅允许exit
@@ -83,8 +87,13 @@ function catchError(errType, errMsg, forceContinueFlag)	--捕获异常，输出�
 	elseif etype == ERR_WARNING then		--警告任何时候只提示
 		LogError("!!!maybe some err in here, care it!!!")
 	elseif etype == ERR_TIMEOUT then		--超时错误允许exit，restart
-		dialog(errMsg, 200)
 		if CFG.ALLOW_RESTART == true then
+			if frontAppName() == CFG.APP_ID then
+				Log("TIME OUT BUT APP STILL RUNNING！")
+			else
+				Log("TIME OUT AND APP NOT RUNNING YET！")
+			end
+			dialog(errMsg.."\r\n等待超时，即将重启", 5)
 			LogError("!!!its will close app!!!")
 			closeApp(CFG.APP_ID);
 			sleep(1000)

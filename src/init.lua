@@ -26,13 +26,14 @@ local function parseUserSetting(uiParam)
 	end
 	prt(retParam)
 	
-	if uiParam.radioCoachMode.联赛 == true then		--开场换人开关
+	if uiParam.radioCoachMode.联赛 == true then		--选择模式
 		CURRENT_TASK = TASK_LEAGUE_SIM
 	elseif uiParam.radioCoachMode.天梯 == true then
 		CURRENT_TASK = TASK_SIM
 	else
 		CURRENT_TASK = TASK_NONE
 	end
+	setStringConfig("CURRENT_TASK", CURRENT_TASK)
 	
 	if uiParam.radioSubstitute.开启 == true then		--开场换人开关
 		CFG.ALLOW_SUBSTITUTE = true
@@ -47,6 +48,13 @@ local function parseUserSetting(uiParam)
 		CFG.REFRESH_CONCTRACT = false
 	end
 	setStringConfig("REFRESH_CONCTRACT", tostring(CFG.REFRESH_CONCTRACT))
+	
+	if uiParam.radioRestoredEnergy.开启 == true then		--体力恢复
+		CFG.RESTORED_ENERGY = true
+	else
+		CFG.RESTORED_ENERGY = false
+	end
+	setStringConfig("RESTORED_ENERGY", tostring(CFG.RESTORED_ENERGY))
 	
 	if uiParam.radioRestart.开启 == true then		--崩溃自动重启开关
 		CFG.ALLOW_RESTART = true
@@ -166,10 +174,13 @@ local function parseUserSetting(uiParam)
 end
 
 function loadLastUserSetting()		--加载重启前的UI设置参数
+	IS_BREAKING_TASK = true
 	CFG.APP_ID = getStringConfig("APP_ID", CFG.DEFAULT_APP_ID)
-	CFG.ALLOW_SUBSTITUTE = (getStringConfig("ALLOW_SUBSTITUTE", "false") == "true") == false or true
-	CFG.ALLOW_RESTART = (getStringConfig("ALLOW_RESTART", "false") == "true") == false or true
-	CFG.REFRESH_CONCTRACT = (getStringConfig("REFRESH_CONCTRACT", "false") == "true") == false or true
+	CURRENT_TASK = getStringConfig("CURRENT_TASK", TASK_NONE)
+	CFG.ALLOW_SUBSTITUTE = (getStringConfig("ALLOW_SUBSTITUTE", "false") == "true" and {true} or {false})[1]
+	CFG.ALLOW_RESTART = (getStringConfig("ALLOW_RESTART", "false") == "true" and {true} or {false})[1]
+	CFG.RESTORED_ENERGY = (getStringConfig("RESTORED_ENERGY", "false") == "true" and {true} or {false})[1]
+	CFG.REFRESH_CONCTRACT = (getStringConfig("REFRESH_CONCTRACT", "false") == "true" and {true} or {false})[1]
 	CFG.REPEAT_TIMES = tonumber(getStringConfig("REPEAT_TIMES", tostring(CFG.DEFAULT_REPEAT_TIMES)))
 	
 	CFG.SUBSTITUTE_INDEX_LIST[1].fieldIndex = tonumber(getStringConfig("SUBSTITUTE_INDEX_1", "0"))
@@ -196,6 +207,7 @@ end
 
 local function isExsitLastBreakTask()
 	local status = getStringConfig("CurrentTaskStatus", "end")
+	Log(status)
 	if status == "restart" then
 		return true
 	end
@@ -213,7 +225,7 @@ function initEnv()		--初始化
 	
 	local appid = frontAppName()
 	if appid == nil then
-		dialog("请先打开实况足球再开启脚本")
+		dialog("未检测到任何应用")
 		lua_exit()
 	else
 		if appid ~= CFG.APP_ID then

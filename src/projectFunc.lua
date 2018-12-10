@@ -58,33 +58,74 @@ function switchMainPage(pageName)	--在主界面4个子界面切换
 end
 
 local function getFixStatusPlayers(area, status)	--获取某种状态的所有球员
-	local playerStatusInfo = {}
 	local colorStr = ""
+	local fuzzy = CFG.DEFAULT_FUZZY
 	
 	if status == "excellent" then	--状态极好
-		colorStr = "467|452|0x003b2c,492|452|0x003b2c,492|477|0x003b2c,468|477|0x003b2c,480|465|0x00ffc2"
+		colorStr = "467|452|0x003b2c,492|452|0x003b2c,492|477|0x003b2c,468|477|0x003b2c,480|465|0x00ffc2,480|462|0x00ffc2"--480|465|0x00ffc2
 	elseif status == "good" then	--状态较好
-		colorStr = "467|452|0x263900,492|452|0x263900,492|477|0x263900,468|477|0x263900,480|465|0x97dc00"
+		--colorStr = "467|452|0x263900,492|452|0x263900,492|477|0x263900,476|469|0x97dc00,456|487|0xeeeeee,480|465|0x97dc00"
+		colorStr = "467|453|0x263900,468|476|0x263900,491|476|0x263900,491|453|0x263900,480|465|0x97dc00,484|460|0x97dc00,479|446|0xf7f7f7,476|483|0xe0e0e0"
+		fuzzy = 99		--颜色相近的点实在太多，超过了99点不好区分
 	elseif status == "bad" then		--状态较差
-		colorStr = "467|452|0x3c2200,492|452|0x3c2200,492|477|0x3c2200,468|477|0x3c2200,480|465|0xb36600"
+		colorStr = "467|452|0x3c2200,492|452|0x3c2200,492|477|0x3c2200,468|477|0x3c2200,481|465|0xb36600,484|469|0xb36600"--480|465|0xb36600"
 	elseif status == "worse" then	--状态极差
-		colorStr = "467|452|0x3c0e0e,492|452|0x3c0e0e,492|477|0x3c0e0e,468|477|0x3c0e0e,480|465|0xb90000"
+		colorStr = "467|452|0x3c0e0e,492|452|0x3c0e0e,492|477|0x3c0e0e,468|477|0x3c0e0e,480|465|0xb90000,480|468|0xb90000"
 	elseif status == "normal" then	--状态一般
 		colorStr = "467|452|0x363000,492|452|0x363000,492|477|0x363000,468|477|0x363000,487|465|0xc4bc00"
 	else
 		catchError(ERR_PARAM, "get a worong status in getFixStatusPlayers")
 	end
 	
-	local points = findColors(area, colorStr, 95, 0, 0, 0)
+	local points = findColors(area, colorStr, fuzzy, 0, 0, 0)
 	
 	if #points == 0 then
-		Log("cant find point on :"..status)
-		return playerStatusInfo
+		Log("cant find point on: "..status)
+		return points
 	end
 	
-	for k, v in pairs(points) do
+	if #points >= 99 then	--超过points最大容量99个点意味着可能没有找完所有位置的状态
+		prt(points)
+		dialog("get more than 99 point, maybe not cath all posation")
+		catchError(ERR_PARAM, "get more than 99 point, maybe not cath all posation")
+		return nil
+	end
+	
+	--prt("status: "..status.."  points count: "..#points)
+	
+	return points
+end
+
+local function getPlayerStatusInfo(seats)	--获取所有场上球员的状态信息，包括状态和排布位置，分场上球员和替补席位
+	local players = {}	--球员的坐标及状态,可能包含重复的
+	local validPlayers = {}	--不包含重复的球员
+	local searchArea = {}
+	if seats == "field" then	--场上球员分4块，防止findColors的点超过99炸了
+		searchArea = {{125,53,440,278}, {440,53,755,278}, {125,278,440,503}, {440,278,755,503}}
+	elseif seats == "benchFirstHalf" then		--替补席前半部分
+		searchArea = {{25,48,132,480}}
+	elseif seats == "benchLatterHalf" then		--替补席后半部分
+		searchArea = {{25,200,132,480}}
+	else
+		catchError(ERR_PARAM, "get a worong seats in getPlayerStatusInfo")
+	end
+	
+	local statusList = {"worse", "bad", "normal", "good", "excellent"}
+	for k, v in pairs(statusList) do
+		for _k, _v in pairs(searchArea) do
+			local fixStatusPlayers = getFixStatusPlayers(_v, v)
+			if #fixStatusPlayers > 0 then
+				for __k, __v in pairs(fixStatusPlayers) do
+					__v.status = k	--将状态写入对应的球员,用数值表示
+					table.insert(players, __v)	--加入到球员总表
+				end
+			end
+		end
+	end
+	
+	for k, v in pairs(players) do
 		local exsitFlag = false
-		for _k, _v in pairs(playerStatusInfo) do
+		for _k, _v in pairs(validPlayers) do
 			if math.abs(v.x - _v.x) < 20 and math.abs(v.y - _v.y) < 20 then
 				exsitFlag = true
 				break
@@ -92,40 +133,7 @@ local function getFixStatusPlayers(area, status)	--获取某种状态的所有�
 		end
 		
 		if exsitFlag == false then
-			table.insert(playerStatusInfo, v)
-		end
-	end
-	
-	if #points >= 99 then	--超过points最大容量99个点意味着可能没有找完所有位置的状态
-		catchError(ERR_PARAM, "get more than 99 point, maybe not cath all posation")
-	end
-	
-	prt("status: "..status.." count "..#playerStatusInfo)
-	
-	return playerStatusInfo
-end
-
-local function getPlayerStatusInfo(seats)	--获取所有场上球员的状态信息，包括状态和排布位置，分场上球员和替补席位
-	local players = {}	--球员的坐标及状态
-	local searchArea = {}
-	if seats == "field" then	--场上球员
-		searchArea = {208,73,744,486}
-	elseif seats == "benchFirstHalf" then		--替补席前半部分
-		searchArea = {25,48,132,480}
-	elseif seats == "benchLatterHalf" then		--替补席后半部分
-		searchArea = {25,200,132,480}
-	else
-		catchError(ERR_PARAM, "get a worong seats in getPlayerStatusInfo")
-	end
-	
-	local statusList = {"worse", "bad", "normal", "good", "excellent"}
-	for k, v in pairs(statusList) do
-		local fixStatusPlayers = getFixStatusPlayers(searchArea, v)
-		if #fixStatusPlayers ~= 0 then
-			for _k, _v in pairs(fixStatusPlayers) do
-				_v.status = k	--将状态写入对应的球员,用数值表示
-				table.insert(players, _v)	--加入到球员总表
-			end
+			table.insert(validPlayers, v)
 		end
 	end
 	
@@ -141,20 +149,51 @@ local function getPlayerStatusInfo(seats)	--获取所有场上球员的状态信
 		end
 	end
 	
-	table.sort(players, sortMethod)
+	table.sort(validPlayers, sortMethod)
 	
-	return players
+	--Log("get "..#players.." players points")
+	
+	--prt(validPlayers)
+	local worse, bad, mormal, good, excellent = 0, 0, 0, 0, 0
+	for k, v in pairs(validPlayers) do
+		if v.status == 1 then
+			worse = worse + 1
+		elseif v.status == 2 then
+			bad = bad + 1
+		elseif v.status == 3 then
+			mormal = mormal + 1
+		elseif v.status == 4 then
+			good = good + 1
+		elseif v.status == 5 then
+			excellent = excellent + 1
+		end
+		if k == #validPlayers then
+			Log("worse="..worse)
+			Log("bad="..bad)
+			Log("mormal="..mormal)
+			Log("good="..good)
+			Log("excellent="..tostring(excellent))
+			Log("get "..#validPlayers.." valid players at last")
+		end
+	end
+	
+	return validPlayers
 end
 
 function processSwitchPlayer()
 	tap(609,491)	--切换状态界面
 	sleep(1000)	--会有"状态"二字出现，挡住球员，等待消失，一定要留够时间
 	local fieldPlayers = getPlayerStatusInfo("field")	--获取场上球员信息
+	if fieldPlayers == nil then		--出现超过99点直接放弃换人，等2.0更新
+		return
+	end
 	if #fieldPlayers ~= 11 then 	--未找到全部11个换人
 		sleep(1000)
 		fieldPlayers = getPlayerStatusInfo("field")	--再次获取场上球员信息，防止因为切换时“状态”二字挡住影响
 		if #fieldPlayers ~= 11 then
-			catchError(ERR_PARAM, "did not get 11 fiedl player, just "..#fieldPlayers)
+			--catchError(ERR_PARAM, "did not get 11 fiedl player, just "..#fieldPlayers)
+			catchError(ERR_WARNING, "did not get 11 fiedl player, just "..#fieldPlayers)
+			return
 		end
 	end
 	

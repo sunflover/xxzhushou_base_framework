@@ -24,6 +24,11 @@ function GetUI()
 	pageBaseSet:addLabel({text="（联赛模式有效）",size=20})
 	
 	pageBaseSet:nextLine()
+	pageBaseSet:addLabel({text="体力恢复    ",size=30})
+	pageBaseSet:addRadioGroup({id="radioRestoredEnergy",list="开启,关闭",select=1,w=35,h=12})
+	pageBaseSet:addLabel({text="（体力用完后等待50分钟后继续）",size=20})
+	
+	pageBaseSet:nextLine()
 	pageBaseSet:addLabel({text="崩溃重启    ",size=30})
 	pageBaseSet:addRadioGroup({id="radioRestart",list="开启,关闭",select=1,w=35,h=12})
 	pageBaseSet:nextLine()
@@ -106,7 +111,7 @@ function GetUI()
 	pageTestting:nextLine()
 	pageTestting:addLabel({text="    7.另外不喜欢XX助手的用户，可以进群下载本脚本专用小精灵应用 ",size=20, align="cnter"})
 	pageTestting:nextLine()
-	pageTestting:addLabel({text="    8.有任何问题及建议请反馈给作者，Q群：951492232 ",size=20, align="cnter"})
+	pageTestting:addLabel({text="    8.有任何问题及建议请反馈给作者，Q群：574025168 ",size=20, align="cnter"})
 	
 	return myui
 end

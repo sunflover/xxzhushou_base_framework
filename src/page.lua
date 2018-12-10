@@ -23,10 +23,8 @@ package.loaded[modName] = M
 
 M.pageEigenvalueList = {
 	{pageName = PAGE_INIT, points = "479|400|0xffffff,329|338|0xdc0014,332|288|0xdc0014,610|294|0xdc0014,612|315|0xdc0014"},
-	--{pageName = PAGE_MAIN, points = "136|21|0x000000,264|26|0x000000,712|18|0x007aff,122|513|0xe2e2e2,155|511|0xffffff,258|512|0xc6c6c6"},
 	{pageName = PAGE_MAIN, points = "136|21|0x000000,264|26|0x000000,712|18|0x007aff,122|513|0xe2e2e2,760|511|0xffffff,258|512|0xc6c6c6"},
 	{pageName = PAGE_ONLINE_MATCH, points = "146|23|0x000000,265|18|0x000000,712|20|0x007aff,128|512|0x0079fd,196|439|0xffffff,745|270|0x007bfd"},
-	--{pageName = PAGE_COACH_RANK, points = "137|21|0x000000,712|19|0x007aff,295|82|0x1f1f1f,64|109|0x0079fd,74|408|0x0079fd,228|514|0x696969"},
 	{pageName = PAGE_COACH_RANK, points = "64|86|0x12a42b,62|315|0x0079fd,80|316|0x12a42b,276|82|0x1f1f1f,569|85|0xfc3979,74|409|0x0079fd"},
 	{pageName = PAGE_MATCHED, points = "140|23|0x000000,713|18|0xc6c6c9,127|515|0x5c5c5c,824|504|0x0079fd"},
 	{pageName = PAGE_ROSTER, points = "139|24|0x000000,713|21|0xc6c6c9,60|303|0x0079fd,852|120|0x005cbf,780|433|0x1f1f1f,812|513|0x0079fd"},
@@ -34,7 +32,6 @@ M.pageEigenvalueList = {
 	{pageName = PAGE_INTERVAL, points = "378|106|0xe7fbfc,446|104|0x283944,625|271|0xebfef8,529|366|0x293943,479|455|0x1e3133"},
 	{pageName = PAGE_INTERVAL_READY, points = "398|244|0xffffff,706|244|0x0079fd,804|391|0xffffff,829|510|0x0079fd"},
 	{pageName = PAGE_END_READY, points = "398|244|0x0079fd,706|244|0xffffff,674|392|0x0079fd,689|391|0x12a42b,829|510|0x0079fd"},
-	--{pageName = PAGE_RANK_UP, points = "267|25|0x000000,619|22|0xc6c6c9,598|20|0xffffff,713|18|0xc6c6c9,818|22|0xc6c6c9,824|512|0x0079fd"},
 	{pageName = PAGE_RANK_UP, points = "241|27|0x000000,817|22|0xc6c6c9,198|433|0x181c1c,611|31|0xc6c6c9,842|513|0x0079fd,790|403|0x101214", fuzzy = 90},
 	{pageName = PAGE_SUBSTITUTED, points = "73|35|0xffffff,177|119|0xffffff,785|138|0x131313,827|125|0x003773,788|433|0x131313"},
 	{pageName = PAGE_PLAYER_STATUS, points = "124|510|0x0079fd,68|407|0xfdfdfd,825|128|0x005cbf,800|275|0xff9500,797|421|0x1f1f1f"},
@@ -47,6 +44,7 @@ M.pageEigenvalueList = {
 	{pageName = PAGE_LEAGUE_RESULT, points = "416|162|0x9ec2ff,435|162|0x1e53b1,458|162|0x9ec2ff,472|162|0x1e53b1,492|164|0x9ec2ff,437|515|0xcaddf0,454|511|0x0078fd"},
 	{pageName = PAGE_LEAGUE_SCOUT, points = "440|124|0xffcc00,435|145|0x638799,530|150|0x638799,479|149|0x98aab3,505|506|0xc2c2c2,832|510|0x0079fd"},
 	{pageName = PAGE_PLAYER_EXPIRED, points = "206|105|0x13304d,450|165|0xffa2a8,509|166|0xffffff,485|199|0xff3261,440|404|0xcaddf0,445|450|0xf5f5f5"},
+	{pageName = PAGE_LEAGUE_BREAKING, points = "321|89|0x797979,289|117|0x7d7d7d,480|460|0x7a7a7a,308|342|0xcaddf0,669|346|0xcaddf0,385|476|0x7f7f7f"},
 }
 function M.toPointsString(pointsTable)		--将{{x1, y1, c1},{x2, y2, c2},}转换成"x1|y1|c1,x2|y2|c2"格式
 	local strr = ""
@@ -101,6 +99,10 @@ function M.isColor(x,y,c,s)   --x,y为坐标值，c为颜色值，s为相似度�
 end
 
 function M.matchColors(points, fuzzy)		--匹配界面
+	if points == nil or #points == 0 then
+		catchError(ERR_PARAM, "points is err in matchColors")
+	end
+
 	f = fuzzy or CFG.DEFAULT_FUZZY
 	local tmpPoints = {}
 	if type(points) == "string" then
@@ -132,6 +134,9 @@ function M.getCurrentPage()		--获取当前界面
 end
 
 function M.isCurrentPage(pageName)		--验证当前界面是否为pageName界面
+	if pageName == nil then
+		catchError(ERR_PARAM, "pageName is nil in isCurrentPage")
+	end
 	for k, v in pairs(M.pageEigenvalueList) do
 		if v.pageName == pageName then
 			local f = v.fuzzy or CFG.DEFAULT_FUZZY
@@ -141,18 +146,53 @@ function M.isCurrentPage(pageName)		--验证当前界面是否为pageName界面
 	return false
 end
 
-function M.catchPage(points, waitTime,fuzzy)		--等待捕获到指定界面再释放
+--捕获一个已定义的界面或者一个由pagePoints定义的界面，返回catch到的页面序号
+function M.catchPage(pageNames, pagePoints, waitTime)		--等待捕获到指定界面再释放
+	if pageNames == nil and pagePoints == nil then
+		catchError(ERR_PARAM, "nil param in catchPage")
+	end
+	
 	local wt = waitTime or DEFAULT_TIMEOUT
-	local f = fuzzy or CFG.DEFAULT_FUZZY
+	
+	tmpPageNamesList = {}
+	tmpPagePointsList = {}
+	if type(pageNames) == "string" then
+		table.insert(tmpPageNamesList, pageNames)
+	elseif type(pageNames) == "table" then
+		for k, v in pairs(pageNames) do
+			table.insert(tmpPageNamesList, v)
+		end
+	else
+		catchError(ERR_PARAM, "wrong type in catchPage")
+	end
+	
+	if type(pagePoints) == "string" then
+		table.insert(tmpPagePointsList, pagePoints)
+	elseif type(pagePoints) == "table" then
+		for k, v in pairs(pagePoints) do
+			table.insert(tmpPagePointsList, v)
+		end
+	else
+		catchError(ERR_PARAM, "wrong type in catchPage")
+	end
 	
 	local startTime = getCurrentTime()
 	while true do
-		if M.matchColors(points, f) then
-			break
+		for k, v in pairs(tmpPageNamesList) do
+			if M.isCurrentPage(v) then
+				return k
+			end
 		end
+		
+		for k, v in pairs(tmpPagePointsList) do
+			if M.matchColors(v) then
+				return #tmpPageNamesList + k
+			end
+		end
+		
 		if getCurrentTime() - startTime > wt then
-			catchError(ERR_TIMEOUT, "catchPage timeout")
-			break
+			catchError(ERR_WARNING, "catchPage timeout")
+			return 0
 		end
 		sleep(50)
 	end
@@ -181,26 +221,27 @@ function M.goNextByCatchPoint(rect, points, delay, fuzzy)	--通过找点然后�
 			break
 		end
 		
-		if getCurrentTime() - startTime > d then
+		if getCurrentTime() - startTime > CFG.DEFAULT_TIMEOUT then
 			catchError(ERR_TIMEOUT, "execute goNextByCatchPoint timeout")
 		end
 		
 		sleep(50)
 	end
+	Log("end goNextByFindPoint")
 end
 
 function M.goNextByPoint(x, y)		--通过固定点点击进入下一步
 	tap(x, y)
 end
 
-function M.waitSkipNilPage()		--通过固定点点击进入下一步
+function M.waitSkipNilPage()		--等在一个已经定义过的界面再释放
 	local startTime = os.time()
 	while true do
 		if page.getCurrentPage() ~= nil then
 			break
 		end
 		
-		if os.time() - startTime > 5 then
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
 			catchError(ERR_TIMEOUT, "未检测到预定的脚本开始界面")
 		end
 		sleep(200)
@@ -209,27 +250,6 @@ end
 
 --检测低可能性出现的界面，通过检测可能界面和next page谁先到来，比起skip page机制，无需等待进入skip流程的时间CFG.WAIT_SKIP_NIL_PAGE
 --originPage，检测之前的界面
-function M.catchFewProbabilityPage0(originPage, probabilityPageInfo)
-	local startTime = os.time()
-	while true do
-		if page.matchColors(probabilityPageInfo) then	--先出现probabilityPage
-			return true
-		end
-		
-		local currentPage = page.getCurrentPage()
-		if currentPage ~= nil and currentPage == originPage then	--先出现新的已定义界面
-			return false
-		end
-		
-		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
-			break	--直接释放
-		end
-		sleep(50)
-	end
-	
-	return false
-end
-
 function M.catchFewProbabilityPage(originPage, probabilityPageInfo)
 	local startTime = os.time()
 	while true do
