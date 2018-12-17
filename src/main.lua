@@ -31,8 +31,11 @@ init(0,1)
 setScreenScale(540,960)
 if page.getCurrentPage() ~= nil then Log(page.getCurrentPage()) else Log("nil page") end
 
---sleep(3000)
+sleep(3000)
+--processFreshPlayerContract()
 
+current_time = tostring(os.time())
+--snapshot("[public]"..current_time..".png", 0, 0, 959, 539);  --截图并以当前时间戳命名
 --[[
 
 url = 'http://113.110.228.79:9091',

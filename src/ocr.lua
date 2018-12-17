@@ -3,6 +3,8 @@
 -- Date: 2018-12-10
 -- function: tesseract文字识别
 
+--文字识别，需要将训练好的num.traineddata放在res目录下
+--返回清理过的字符串，除去空格等非数字&字母符号
 function ocrAreaText(area, offsetColor)
 	if area == nil then
 		return

@@ -6,6 +6,7 @@
 require("func")
 require("page")
 
+--在脚本重启游戏时跳过初始化界面
 function skipInitPage()
 	local startTime = os.time()
 	if page.isCurrentPage(PAGE_INIT) then	--如果为init就点击跳过进入游戏主界面
@@ -27,7 +28,8 @@ function skipInitPage()
 	end
 end
 
-function switchMainPage(pageName)	--在主界面4个子界面切换
+--在主界面4个子界面切换
+function switchMainPage(pageName)	
 	if page.isCurrentPage(PAGE_MAIN) ~= true then
 		dialog("请先返回主界面！")
 		
@@ -57,7 +59,8 @@ function switchMainPage(pageName)	--在主界面4个子界面切换
 	end
 end
 
-local function getFixStatusPlayers(area, status)	--获取某种状态的所有球员
+--获取一个区域内某种状态的所有球员位置信息
+local function getFixStatusPlayers(area, status)	
 	local colorStr = ""
 	local fuzzy = CFG.DEFAULT_FUZZY
 	
@@ -96,7 +99,8 @@ local function getFixStatusPlayers(area, status)	--获取某种状态的所有�
 	return points
 end
 
-local function getPlayerStatusInfo(seats)	--获取所有场上球员的状态信息，包括状态和排布位置，分场上球员和替补席位
+--获取所有场上球员的状态信息，包括状态和排布位置，分场上球员和替补席位
+local function getPlayerStatusInfo(seats)
 	local players = {}	--球员的坐标及状态,可能包含重复的
 	local validPlayers = {}	--不包含重复的球员
 	local searchArea = {}
@@ -110,19 +114,21 @@ local function getPlayerStatusInfo(seats)	--获取所有场上球员的状态信
 		catchError(ERR_PARAM, "get a worong seats in getPlayerStatusInfo")
 	end
 	
+	--状态根据箭头方向分为5种，下，斜下，平，斜上，上，分别对应：极差，差，一般，好，极好
 	local statusList = {"worse", "bad", "normal", "good", "excellent"}
 	for k, v in pairs(statusList) do
 		for _k, _v in pairs(searchArea) do
 			local fixStatusPlayers = getFixStatusPlayers(_v, v)
 			if #fixStatusPlayers > 0 then
 				for __k, __v in pairs(fixStatusPlayers) do
-					__v.status = k	--将状态写入对应的球员,用数值表示
+					__v.status = k	--将状态写入对应的球员,用数值表示便于比较
 					table.insert(players, __v)	--加入到球员总表
 				end
 			end
 		end
 	end
 	
+	--去除findColor导致的一个球员有多个点对应的情况，一个球员只保留一个点
 	for k, v in pairs(players) do
 		local exsitFlag = false
 		for _k, _v in pairs(validPlayers) do
@@ -137,6 +143,7 @@ local function getPlayerStatusInfo(seats)	--获取所有场上球员的状态信
 		end
 	end
 	
+	--排序，按从上到下，从左到右的顺序，即优先取y较小值，y相同再取x较小值
 	local sortMethod = function(a, b)
 		if a.x == nil or a.y == nil or b.x == nil or b.y == nil then
 			return
@@ -154,6 +161,7 @@ local function getPlayerStatusInfo(seats)	--获取所有场上球员的状态信
 	--Log("get "..#players.." players points")
 	
 	--prt(validPlayers)
+	--统计各状态并打印，用于调试
 	local worse, bad, mormal, good, excellent = 0, 0, 0, 0, 0
 	for k, v in pairs(validPlayers) do
 		if v.status == 1 then
@@ -180,6 +188,7 @@ local function getPlayerStatusInfo(seats)	--获取所有场上球员的状态信
 	return validPlayers
 end
 
+--换人
 function processSwitchPlayer()
 	tap(609,491)	--切换状态界面
 	sleep(1000)	--会有"状态"二字出现，挡住球员，等待消失，一定要留够时间
@@ -285,97 +294,7 @@ function processSwitchPlayer()
 	end
 end
 
-function processFreshPlayerContract0()
-	sleep(1000)
-	local points = findColors({27, 111, 933, 461},
-		"164|141|0xff3b2f,189|142|0xff3b2f,177|129|0xff3b2f,177|155|0xff3b2f,102|218|0x363a4d,199|198|0xe3e3e6")
-	if #points >= 99 then	--超过points最大容量99个点意味着可能没有找完所有位置
-		catchError(ERR_PARAM, "get more than 99 point, maybe not cath all player")
-	end
-	
-	local expiredPlayerFirstHalf = {}
-	for k, v in pairs(points) do
-		local exsitFlag = false
-		for _k, _v in pairs(expiredPlayerFirstHalf) do
-			if math.abs(v.x - _v.x) < 20 and math.abs(v.y - _v.y) < 20 then
-				exsitFlag = true
-				break
-			end
-		end
-		
-		if exsitFlag == false then
-			table.insert(expiredPlayerFirstHalf, v)
-			tap(v.x, v.y)
-			sleep(20)
-		end
-	end
-	
-	prt(expiredPlayerFirstHalf)
-	
-	if #expiredPlayerFirstHalf == 6 then
-		touchMoveTo(20, 500, 20, 110) --滑动替补至下半部分
-		sleep(200)
-		
-		local points = findColors({27, 111, 933, 461},
-			"164|141|0xff3b2f,189|142|0xff3b2f,177|129|0xff3b2f,177|155|0xff3b2f,102|218|0x363a4d,199|198|0xe3e3e6")
-		if #points >= 99 then	--超过points最大容量99个点意味着可能没有找完所有位置
-			catchError(ERR_PARAM, "get more than 99 point, maybe not cath all player")
-		end
-		local expiredPlayerLatterHalf = {}
-		for k, v in pairs(points) do
-			local exsitFlag = false
-			for _k, _v in pairs(expiredPlayerLatterHalf) do
-				if math.abs(v.x - _v.x) < 20 and math.abs(v.y - _v.y) < 20 then
-					exsitFlag = true
-					break
-				end
-			end
-			
-			if exsitFlag == false then
-				table.insert(expiredPlayerLatterHalf, v)
-				tap(v.x, v.y)
-				sleep(20)
-			end
-		end
-		prt(expiredPlayerLatterHalf)
-	end
-	
-	page.goNextByCatchPoint({474, 474, 761, 535},	--点击签约
-		"575|517|0xcaddf0,502|498|0xcaddf0,707|522|0xcaddf0,798|497|0x0079fd,786|526|0x0079fd")
-	sleep(300)
-	page.goNextByCatchPoint({173, 104, 778, 434}, 	--使用资金/金币
-		"372|281|0xffffff,212|271|0xdedede,748|276|0xdedede,440|316|0xdedede,412|367|0xcaddf0")
-	sleep(300)
-	page.goNextByCatchPoint({173, 104, 778, 434}, 	--使用资金
-		"360|282|0x1e54b2,265|249|0xe6e6ed,272|342|0xe6e6ed,692|248|0xe6e6ed,690|342|0xe6e6ed")
-	sleep(300)
-	
-	local startTime = os.time()
-	while true do	--可能出现资金不足
-		local outOfGp = page.matchColors("267|296|0xcaddf0,479|333|0xcaddf0,480|293|0xcaddf0,698|302|0xcaddf0,421|507|0x767677")
-		local payConfirm = page.matchColors("267|296|0xcaddf0,479|333|0xf5f5f5,480|293|0xf5f5f5,698|302|0xcaddf0,421|507|0x767677")
-		if outOfGp then
-			catchError(ERR_TASK_ABORT, "GP不够续约，请退出")
-		elseif payConfirm then
-			break
-		end
-		
-		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
-			catchError(ERR_TIMEOUT, "time out at wait pay info")
-		end
-		sleep(50)
-	end
-	
-	page.goNextByCatchPoint({193, 153, 754, 408},	--支付确定
-		"561|318|0xcaddf0,262|296|0xcaddf0,683|326|0xcaddf0")
-	sleep(300)
-	page.goNextByCatchPoint({193, 153, 754, 408}, 	--已续约确定
-		"438|388|0xcaddf0,267|358|0xcaddf0,691|392|0xcaddf0,476|158|0x06b824")
-	sleep(300)
-	page.goNextByCatchPoint({769, 473, 955, 530},	--下一步
-		"837|520|0x0079fd,783|527|0x0079fd,947|500|0x0079fd")
-end
-
+--续约
 function processFreshPlayerContract()
 	sleep(1000)
 	
@@ -412,7 +331,7 @@ function processFreshPlayerContract()
 	end
 	prt(expiredPlayerFirstHalf)
 	
-	if #expiredPlayerFirstHalf == 3 or expiredPlayerFirstHalf == 6 then
+	if #expiredPlayerFirstHalf == 3 or #expiredPlayerFirstHalf == 6 then
 		touchMoveTo(20, 500, 20, 110) --滑动替补至下半部分
 		sleep(400)
 		for _, v_ in pairs(areaList) do

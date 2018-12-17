@@ -8,6 +8,7 @@ require("task")
 require("page")
 require("config")
 
+--检测是否为支持的分辨率
 local function checkResolution()
 	local width, height = getScreenSize()
 	
@@ -20,6 +21,7 @@ local function checkResolution()
 	return false
 end
 
+--从ui的返回值表中解析用户设置参数
 local function parseUserSetting(uiParam)
 	if uiParam._cancel then
 		lua_exit()
@@ -70,6 +72,7 @@ local function parseUserSetting(uiParam)
 	end
 	setStringConfig("REPEAT_TIMES", tostring(CFG.REPEAT_TIMES))
 	
+	--将位置*转换成对应的数字
 	local function _convertIndex(posation)
 		if type(posation) ~= "string" then
 			return 0
@@ -104,6 +107,7 @@ local function parseUserSetting(uiParam)
 		end
 	end
 	
+	--将换人条件转为为数字
 	local function _convertCondition(condition)
 		if type(condition) ~= "string" then
 			return 0
@@ -173,7 +177,8 @@ local function parseUserSetting(uiParam)
 	return true
 end
 
-function loadLastUserSetting()		--加载重启前的UI设置参数
+--当游戏异常，脚本重启应用后会跳过UI，直接加载重启之前保存的设置参数
+function loadLastUserSetting()
 	IS_BREAKING_TASK = true
 	CFG.APP_ID = getStringConfig("APP_ID", CFG.DEFAULT_APP_ID)
 	CURRENT_TASK = getStringConfig("CURRENT_TASK", TASK_NONE)
@@ -205,6 +210,7 @@ function loadLastUserSetting()		--加载重启前的UI设置参数
 	prt(CFG.SUBSTITUTE_INDEX_LIST)
 end
 
+--检测是否为断点任务(脚本重启过应用)，resatart会在task.run()中重置
 local function isExsitLastBreakTask()
 	local status = getStringConfig("CurrentTaskStatus", "end")
 	Log(status)
@@ -215,7 +221,8 @@ local function isExsitLastBreakTask()
 	return false
 end
 
-function initEnv()		--初始化
+--初始化，包括弹出UI，解析设置参数，加载各种配置文件
+function initEnv()
 	init("0", 1)
 	
 	if checkResolution() ~= true then

@@ -15,19 +15,21 @@ local M = {}
 _G[modName] = M
 package.loaded[modName] = M
 
-M.taskList = {	--任务列表，01预留给断点任务
-	{name = TASK_BREAK_POINT},
-}
+--任务列表，在具体任务(task_list)中的任务文件中会调用task.insert()把具体的任务添加到此表中
+M.taskList = {}
 
+--设置当前任务运行阶段
 function M.setCurrentTaskStatus(status)
 	setStringConfig("CurrentTaskStatus", status)
 end
 
+--将具体任务中的task表添加到taskList总表
 function M.insertTask(task)
 	table.insert(M.taskList, task)
 end
 
-function M.isExistTask(taskName)	--是否存在任务taskName
+--是否存在任务taskName
+function M.isExistTask(taskName)
 	for _, v in pairs(M.taskList) do
 		if taskName == v.name then
 			return true
@@ -37,12 +39,14 @@ function M.isExistTask(taskName)	--是否存在任务taskName
 	return false
 end
 
-function M.getCurrentTask()		--获取当前任务
+--获取当前任务
+function M.getCurrentTask()	
 	if CURRENT_TASK ~= TASK_NONE and CURRENT_TASK ~= nil then
 		return CURRENT_TASK
 	end
 end
 
+--获取当前任务的流程
 function M.getTaskProcess(taskName)
 	for k, v in pairs(M.taskList) do
 		if v.name == taskName then
@@ -51,6 +55,7 @@ function M.getTaskProcess(taskName)
 	end
 end
 
+--当前界面是否为当前任务流程中的某一个流程片的界面
 function M.isInTaskPage()
 	local currentPage = M.getCurrentPage()
 	if currentPage == nil or currentPage == PAGE_NONE then
@@ -66,10 +71,10 @@ function M.isInTaskPage()
 	return false
 end
 
-function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任务名称，任务重复次数（默认为一次0），是否为断点任务
-	local reTimes = repeatTimes or 1
+--执行任务，param:任务名称，任务重复次数
+function M.run(taskName, repeatTimes)
+	local reTimes = repeatTimes or CFG.DEFAULT_REPEAT_TIMES
 	local firstRunProcess = true
-	local breakTaskFlag = breakPointFlag ~= false
 	
 	if M.isExistTask(taskName) ~= true then		--检查任务是否存在
 		M.setCurrentTaskStatus("end")	--清空断点任务状态，防止错误卡死

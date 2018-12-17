@@ -48,6 +48,16 @@ funcList[PAGE_LEAGUE] = function()
 end
 
 funcList[PAGE_LEAGUE_SIM] = function()
+	--当48级联赛重启后，游戏BUG可能会出现获得成就提示界面
+	if IS_BREAKING_TASK then
+		sleep(1500)
+		if page.matchColors("268|26|0x000000,878|95|0x972249,138|93|0x26b21c,821|238|0x26b21c,263|406|0xcaddf0,695|443|0xcaddf0", 90) then
+			page.goNextByCatchPoint({214, 363, 754, 513},
+				"445|434|0xcaddf0,263|405|0xcaddf0,688|441|0xcaddf0,462|467|0xf5f5f5")
+		end
+		IS_BREAKING_TASK = false
+	end
+	
 	--可跳过余下比赛
 	while true do
 		sleep(500)
@@ -59,7 +69,7 @@ funcList[PAGE_LEAGUE_SIM] = function()
 				"566|321|0xcaddf0,265|294|0xcaddf0,683|330|0xcaddf0,205|272|0x999999,756|270|0x131313")
 			sleep(500)
 			--page.goNextByCatchPoint({46, 27, 869, 525}, 	--进阶确定
-				--"438|420|0xcaddf0,265|406|0xcaddf0,683|441|0xcaddf0,187|145|0x00d422,778|153|0x00d422")
+			--"438|420|0xcaddf0,265|406|0xcaddf0,683|441|0xcaddf0,187|145|0x00d422,778|153|0x00d422")
 			page.goNextByCatchPoint({158,153,836,525},
 				"442|431|0xcaddf0,273|404|0xcaddf0,682|442|0xcaddf0,695|387|0xf5f5f5,269|459|0xf5f5f5")
 			sleep(500)
@@ -191,7 +201,7 @@ funcList[PAGE_LEAGUE_SCOUT] = function()
 				"206|105|0x13304d,450|165|0xffa2a8,509|166|0xffffff,485|199|0xff3261,440|404|0xcaddf0,445|450|0xf5f5f5",
 				"136|21|0x000000,264|26|0x000000,712|18|0x007aff,122|513|0xe2e2e2,760|511|0xffffff,258|512|0xc6c6c6",	--球员续约
 				"65|23|0x12326a,73|22|0x080808,83|3|0xffffff,919|39|0x007aff,912|39|0xccdff2,927|39|0xccdff2,920|32|0xccdff2,920|47|0xccdff2"})	--通知
-				
+		
 		if nextPage == 1 then	--教练续约
 			page.goNextByCatchPoint({167, 103, 792, 426},	--清除定额确定
 				"442|337|0xcaddf0,268|319|0xcaddf0,687|349|0xcaddf0,344|198|0x4cd964,786|206|0x2e823c")
@@ -240,7 +250,7 @@ funcList[PAGE_LEAGUE_SCOUT] = function()
 end
 
 
-
+--将当前任务添加至任务总表
 local function initTask()
 	for k, v in pairs(taskLeagueSim.process) do
 		for _k, _v in pairs(funcList) do

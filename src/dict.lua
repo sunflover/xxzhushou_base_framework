@@ -14,7 +14,8 @@ local M = {}
 _G[modName] = M
 package.loaded[modName] = M
 
-M.words = {					--词库，源自四六级单词，4K+
+--词库表，源自四六级单词，4K+
+M.words = {					
 	"abandon", "ability", "able", "abnormal", "aboard", "about", "above", "abroad", "absence", "absent",
 	"absolute", "absolutely", "absorb", "abstract", "abundant", "abuse", "academic", "academy", "accelerate", "acceleration",
 	"accent", "accept", "acceptable", "acceptance", "access", "accessory", "accident", "accidental", "accommodate", "accommodation",
@@ -468,7 +469,7 @@ M.words = {					--词库，源自四六级单词，4K+
 	"zealous", "zebra", "zero", "zone", "zoo",
 }
 
-
+--获取保存在WORD_INDEX中的上一次使用的单词索引，主要用于顺序获取单词
 local function getLastWordIndex()
 	local index = tonumber(getStringConfig("WORD_INDEX", "0"))
 	if index > #M.words then	--当超出索引就置零
@@ -478,10 +479,12 @@ local function getLastWordIndex()
 	return index
 end
 
+--更新(最后一次使用的)索引
 local function updateWordIndex(index)
 	setStringConfig("WORD_INDEX", tostring(index))
 end
 
+--从词源表按顺序获取一个单词，通过WORD_INDEX维持顺序
 function M.getAWord()	--顺序获取一个单词
 	local lastIndex = getLastWordIndex()
 	
@@ -490,12 +493,14 @@ function M.getAWord()	--顺序获取一个单词
 	return M.words[lastIndex + 1]
 end
 
+--从词源表随机获取一个单词
 function M.getRandomWord()	--获取一个随机单词
 	math.randomseed(tostring(os.time()):reverse():sub(1, 7))
 	return M.words[math.random(1, #M.words)]
 end
 
-function M.getPrefixWord(preStr)	--获取一个以preStr开头的随机单词
+--获取一个以preStr开头的随机单词
+function M.getPrefixWord(preStr)	
 	if preStr == nil then
 		return nil
 	end
@@ -517,7 +522,8 @@ function M.getPrefixWord(preStr)	--获取一个以preStr开头的随机单词
 	return nil
 end
 
-function M.getSuffixWord(suffStr)	--获取一个以suffStr结尾的随机单词
+--获取一个以suffStr结尾的随机单词
+function M.getSuffixWord(suffStr)
 	if suffStr == nil then
 		return nil
 	end
@@ -539,7 +545,8 @@ function M.getSuffixWord(suffStr)	--获取一个以suffStr结尾的随机单词
 	return nil
 end
 
-function M.getPreSuffixWord(preSrt, suffStr)	--获取一个以preStr开头和suffStr结尾的随机单词
+--获取一个以preStr开头和suffStr结尾的随机单词
+function M.getPreSuffixWord(preSrt, suffStr)
 	if suffStr == nil or preSrt == nil then
 		return nil
 	end
