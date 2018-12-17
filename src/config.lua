@@ -6,16 +6,15 @@
 CFG = {}	--配置文件总表，注册在_G下
 
 -----------------版本信息-----------------
-CFG.VERSION = "v0.2.2"
-CFG.BIULD_TIME = "20181210"
+CFG.VERSION = "v0.3.7"
+CFG.BIULD_TIME = "20181217"
 
 -----------------开发分辨率-----------------
 CFG.RESOLUTION = {w = 540, h = 960}
 
 -----------------调试参数-----------------
-CFG.IS_DEBUG = false			--调试
-CFG.LOG = false				--是否允许输出LOG信息，必须在IS_DEBUG为TRUE的时候有效
-CFG.WRITE_LOG = false		--是否将LOG写入log.txt文件
+CFG.LOG = true				--是否允许输出LOG信息
+CFG.WRITE_LOG = false		--是否将LOG写入log.txt文件, 不受CFG.LOG影响
 
 
 -----------------重启脚本及应用参数-----------------
@@ -68,6 +67,7 @@ CFG.SUPPORT_RESOLUTION = {
 	{1440, 2560},
 	{640, 1136},
 	{750, 1334},
+	{1242, 2208},
 	--[[
 	--9:18
 	{1440*2880},

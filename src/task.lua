@@ -131,6 +131,7 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 		for k, v in pairs(taskProcess) do
 			local checkInterval = v.checkInterval or CFG.DEFAULT_PAGE_CHECK_INTERVAL
 			local timeout = v.timeout or CFG.DEFAULT_TIMEOUT
+			local lastCheckSkipPage = PAGE_NONE
 			
 			local startTime = getCurrentTime()
 			while true do
@@ -168,15 +169,24 @@ function M.run(taskName, repeatTimes, breakPointFlag)	--执行任务，param:任
 				if getCurrentTime() - startTime > waitCheckSkipTime then	--跳过
 					local currentPage = page.getCurrentPage()
 					if currentPage ~= nil and currentPage ~= PAGE_NONE then
-						local isProcessPage = false
-						local pageIndex = 0
-						for _k, _v in pairs(taskProcess) do
-							if _v.name == currentPage then	--当前界面为其后的某个流程片中界面
-								Log("set it skip between current process page and a next process page")
-								for __k, __v  in pairs(taskProcess) do
-									if __k >= k and __k < _k then
-										__v.skipStatus = true
+						--保证至少是第二次出现当前界面，防止正好在此处（第一次）出现新界面，但还没有经过是否为当前流程界面
+						--的判定就直接进入skip了（因为可能存在刚好当前流程片和之后的某个流程片正好相同的情况，这样的话就会
+						--会直接skip掉当前流程片至后边的那个流程片之间的流程片）
+						if lastCheckSkipPage ~= currentPage then
+							lastCheckSkipPage = currentPage
+						else
+							local isProcessPage = false
+							local pageIndex = 0
+							for _k, _v in pairs(taskProcess) do
+								if _k > k and _v.name == currentPage then	--当前界面为其后的某个流程片中界面
+									Log("set it skip between current process page and a next process page")
+									for __k, __v  in pairs(taskProcess) do
+										if __k >= k and __k < _k then
+											Log("set skipStatus true: "..__v.name)
+											__v.skipStatus = true
+										end
 									end
+									break	--必须跳出，不然后边的相同名称流程片也被skip了
 								end
 							end
 						end

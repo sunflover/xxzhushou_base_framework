@@ -22,7 +22,8 @@ _G[modName] = M
 package.loaded[modName] = M
 
 M.pageEigenvalueList = {
-	{pageName = PAGE_INIT, points = "479|400|0xffffff,329|338|0xdc0014,332|288|0xdc0014,610|294|0xdc0014,612|315|0xdc0014"},
+	{pageName = PAGE_INIT, points = "130|253|0xdc0014,241|240|0xdc0014,299|250|0xdc0014,400|249|0xdc0014,847|36|0xfabe00,256|369|0xffffff"},
+	{pageName = PAGE_NOTICE, points = "65|23|0x12326a,73|22|0x080808,83|3|0xffffff,919|39|0x007aff,912|39|0xccdff2,927|39|0xccdff2,920|32|0xccdff2,920|47|0xccdff2"},
 	{pageName = PAGE_MAIN, points = "136|21|0x000000,264|26|0x000000,712|18|0x007aff,122|513|0xe2e2e2,760|511|0xffffff,258|512|0xc6c6c6"},
 	{pageName = PAGE_ONLINE_MATCH, points = "146|23|0x000000,265|18|0x000000,712|20|0x007aff,128|512|0x0079fd,196|439|0xffffff,745|270|0x007bfd"},
 	{pageName = PAGE_COACH_RANK, points = "64|86|0x12a42b,62|315|0x0079fd,80|316|0x12a42b,276|82|0x1f1f1f,569|85|0xfc3979,74|409|0x0079fd"},
@@ -35,9 +36,9 @@ M.pageEigenvalueList = {
 	{pageName = PAGE_RANK_UP, points = "241|27|0x000000,817|22|0xc6c6c9,198|433|0x181c1c,611|31|0xc6c6c9,842|513|0x0079fd,790|403|0x101214", fuzzy = 90},
 	{pageName = PAGE_SUBSTITUTED, points = "73|35|0xffffff,177|119|0xffffff,785|138|0x131313,827|125|0x003773,788|433|0x131313"},
 	{pageName = PAGE_PLAYER_STATUS, points = "124|510|0x0079fd,68|407|0xfdfdfd,825|128|0x005cbf,800|275|0xff9500,797|421|0x1f1f1f"},
-	
 	{pageName = PAGE_OFFLINE_FAIL, points = "281|330|0xcaddf0,244|370|0xf5f5f5,197|365|0x767676,248|408|0x757575,761|394|0x7a7a7a,701|184|0xf5f5f5"},	--天梯掉线失败界面
-	{pageName = PAGE_LEAGUE, points = "185|267|0xf8f9fb,200|266|0x000000,209|267|0x000000,219|269|0x000000,237|271|0xf8f9fb,421|83|0xf52563"},
+	
+	{pageName = PAGE_LEAGUE, points = "210|257|0x000000,209|244|0xf8f9fb,479|262|0x000000,477|244|0xf8f9fb,371|91|0xdf436f,566|439|0x007aff"},
 	{pageName = PAGE_LEAGUE_SIM, points = "267|26|0x000000,69|122|0x0079fd,89|127|0x12a42b,82|387|0x0079fd,370|286|0x135e9b,878|95|0xfc3979"},
 	{pageName = PAGE_LEAGUE_MATCHED, points = "231|414|0xff9500,123|98|0x205080,832|96|0x205080,612|415|0xff9500,795|525|0x0079fd,944|499|0x0079fd"},
 	{pageName = PAGE_LEAGUE_POINTS, points = "138|355|0x135e9b,137|369|0x135e9b,138|411|0xa8cce0,135|421|0x135e9b,831|513|0x0079fd"},
@@ -99,33 +100,47 @@ function M.isColor(x,y,c,s)   --x,y为坐标值，c为颜色值，s为相似度�
 end
 
 function M.matchColors(points, fuzzy)		--匹配界面
-	if points == nil or #points == 0 then
-		catchError(ERR_PARAM, "points is err in matchColors")
+	if points == nil then
+		catchError(ERR_PARAM, "points is nil in matchColors")
 	end
 
 	f = fuzzy or CFG.DEFAULT_FUZZY
 	local tmpPoints = {}
 	if type(points) == "string" then
+		if points == "" then
+			catchError(ERR_PARAM, "points is empty string in matchColors")
+		end
 		tmpPoints = M.toPointsTable(points)
 	elseif type(points) == "table" then
+		if #points == 0 then
+			catchError(ERR_PARAM, "points is empty table in matchColors")
+		end	
 		tmpPoints = points
 	else
 		catchError(ERR_PARAM, "get a wrong type value in matchColors")
 	end
 	
+	if #tmpPoints == 0 then
+		catchError(ERR_PARAM, "get a empty table tmpPoints in matchColors")
+	end
+	
+	local matchFlag = false
 	for k, v in pairs(tmpPoints) do
-		if M.isColor(v[1], v[2], v[3], f) == false then
-			return false
+		matchFlag = true
+		if M.isColor(v[1], v[2], v[3], f) ~= true then
+			matchFlag = false
+			break
 		end
 	end
-	return true
+	
+	return matchFlag
 end
 
 function M.getCurrentPage()		--获取当前界面
 	for _, v in pairs(M.pageEigenvalueList) do
 		local f = v.fuzzy or CFG.DEFAULT_FUZZY
 		local isMatch = M.matchColors(v.points, f)
-		if isMatch then
+		if isMatch == true then
 			Log("get current page : "..v.pageName)
 			return v.pageName
 		end

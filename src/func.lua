@@ -31,7 +31,7 @@ function Log(content)		--打印log，允许content = nil的情况，用于排错
 		writeLog(content)
 	end
 	
-	if CFG.IS_DEBUG ~= true or CFG.LOG ~= true then
+	if CFG.LOG ~= true then
 		return
 	end
 	
@@ -41,10 +41,6 @@ end
 local function LogError(content)	--catchError专用，不受CFG.LOG的影响
 	if CFG.WRITE_LOG == true then
 		writeLog(content)
-	end
-	
-	if CFG.IS_DEBUG ~= true then
-		return
 	end
 	
 	sysLog(content)
@@ -78,36 +74,39 @@ function catchError(errType, errMsg, forceContinueFlag)	--捕获异常，输出�
 		return
 	end
 	if etype == ERR_MAIN or etype == ERR_TASK_ABORT then	--核心错误仅允许exit
-		dialog(errMsg.."\r\n即将退出", 5)
+		dialog(errMsg.."\r\n即将退出")
 		LogError("!!!cant recover task, program will end now!!!")
 		lua_exit()
 	elseif etype == ERR_FILE or etype == ERR_PARAM then	--关键错误仅允许exit
+		dialog(errMsg.."\r\n即将退出")
 		LogError("!!!cant recover task, program will endlater!!!")
 		lua_exit()
 	elseif etype == ERR_WARNING then		--警告任何时候只提示
 		LogError("!!!maybe some err in here, care it!!!")
 	elseif etype == ERR_TIMEOUT then		--超时错误允许exit，restart
 		if CFG.ALLOW_RESTART == true then
+			dialog(errMsg.."\r\n等待超时，即将重启", 5)
 			if frontAppName() == CFG.APP_ID then
 				Log("TIME OUT BUT APP STILL RUNNING！")
 			else
 				Log("TIME OUT AND APP NOT RUNNING YET！")
 			end
-			dialog(errMsg.."\r\n等待超时，即将重启", 5)
+			
 			LogError("!!!its will close app!!!")
 			closeApp(CFG.APP_ID);
 			sleep(1000)
 			LogError("!!!its will restart app!!!")
 			if runApp(CFG.APP_ID) then
-				LogError("!!!its will restart script 10s later after restart app!!!")
+				LogError("!!!its will restart script 15s later after restart app!!!")
 				task.setCurrentTaskStatus("restart")
-				sleep(10000)
+				sleep(15000)
 				lua_restart()
 			else
 				LogError("!!!restart app faild, script will exit!!!")
 				lua_exit()
 			end
 		else
+			dialog(errMsg.."\r\n等待超时，即将退出")
 			LogError("!!!not allow restart, script will exit later!!!")
 			lua_exit()
 		end
@@ -181,8 +180,7 @@ function printTbl(tbl)--table输出,请注意不要传入对象,会无限循环�
 end
 
 function prt(...)--万能输出
-
-	if CFG.IS_DEBUG ~= true or CFG.LOG ~= true then
+	if CFG.LOG ~= true then
 		return
 	end
 	
@@ -209,6 +207,7 @@ function touchMoveTo(x1, y1, x2, y2)
 		sleep(200)
 		for i = 1, math.abs((x2 - x1) / stepX), 1 do
 			touchMove(1, x1 + i * stepX, y1 + i * stepY)
+			sleep(50)
 		end
 		touchMove(1, x2, y2)
 		sleep(200)
@@ -219,6 +218,7 @@ function touchMoveTo(x1, y1, x2, y2)
 		local stepY = y2 > y1 and CFG.TOUCH_MOVE_STEP or -CFG.TOUCH_MOVE_STEP
 		for i = 1, math.abs((y2 - y1) / stepY), 1 do
 			touchMove(1, x2, y1 + i * stepY)
+			sleep(50)
 		end
 		touchMove(1, x2, y2)
 		sleep(200)

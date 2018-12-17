@@ -14,6 +14,7 @@ local M = {}
 local taskSim = {
 	name = TASK_SIM,
 	process = {
+		--{name = PAGE_NOTICE, justBreakingRun = true},
 		{name = PAGE_MAIN, justFirstRun = true},
 		{name = PAGE_ONLINE_MATCH, justFirstRun = true},
 		{name = PAGE_COACH_RANK},
@@ -32,7 +33,7 @@ local taskSim = {
 		{name = PAGE_INTERVAL, timeout = 300, checkInterval = 500},	--点球结束
 		
 		{name = PAGE_END_READY},
-		{name = PAGE_OFFLINE_FAIL, justFirstRun = true},
+		{name = PAGE_OFFLINE_FAIL, justBreakingRun = true},
 		{name = PAGE_RANK_UP},
 	}
 }
@@ -40,6 +41,31 @@ local taskSim = {
 local funcList = {}
 local waitFuncList = {}
 
+funcList[PAGE_NOTICE] = function()
+	page.goNextByCatchPoint({822, 8, 953, 80}, 	--关闭消息
+		"920|39|0x007aff,913|39|0xccdff2,920|32|0xccdff2,927|39|0xccdff2,920|47|0xccdff2")
+	
+	sleep(200)
+	
+	local startTime = os.time()
+	while true do
+		local nextPage = page.catchFewProbabilityPage(PAGE_MAIN,{
+				"65|23|0x12326a,73|22|0x080808,83|3|0xffffff,919|39|0x007aff,912|39|0xccdff2,927|39|0xccdff2,920|32|0xccdff2,920|47|0xccdff2"	--还有通知
+			})
+		
+		if nextPage == 1 then	--关闭消息
+			page.goNextByCatchPoint({822, 8, 953, 80}, 	--关闭消息
+				"920|39|0x007aff,913|39|0xccdff2,920|32|0xccdff2,927|39|0xccdff2,920|47|0xccdff2")
+		elseif nextPage == 0 then
+			break
+		end
+		
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+			catchError(ERR_TIMEOUT, "time out at close notice")
+		end
+		sleep(50)
+	end
+end
 
 funcList[PAGE_MAIN] = function()
 	switchMainPage(PAGE_MAIN_MATCH)
@@ -61,8 +87,23 @@ funcList[PAGE_COACH_RANK] = function()
 	--低概率出现，不加入skip机制，skip机制需要等待CFG.WAIT_SKIP_NIL_PAGE时间后才能进入
 	if page.catchFewProbabilityPage(PAGE_COACH_RANK, "439|168|0xf5f5f5,442|182|0xdedede,411|276|0xffffff,408|315|0xdedede,401|361|0xcaddf0") == 1 then
 		page.goNextByCatchPoint({208, 281, 749, 442}, "434|374|0xcaddf0,233|358|0xcaddf0,715|387|0xcaddf0,464|333|0xf5f5f5")
-		dialog("能量不足，请退出")
-		catchError(ERR_TASK_ABORT, "能量不足将退出")
+		--dialog("能量不足，请退出")
+		--catchError(ERR_TASK_ABORT, "能量不足将退出")
+		if CFG.RESTORED_ENERGY == true then
+			dialog("能量不足100分钟内后继续，请勿操作", 5)
+			local startTime = os.time()
+			while true do
+				if os.time() - startTime > 110 * 60 then
+					dialog("已续足能量，即将继续任务", 5)
+					break
+				end
+				sleep(60 * 1000)	--每分钟检测一次
+			end
+		else
+			Log("能量不足，请退出")
+			dialog("能量不足，请退出")
+			lua_exit()
+		end
 	end
 end
 

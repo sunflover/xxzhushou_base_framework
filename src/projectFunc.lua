@@ -214,6 +214,7 @@ function processSwitchPlayer()
 	end
 	
 	touchMoveTo(20, 500, 20, 110) --滑动替补至下半部分
+	sleep(300)
 	
 	local benchPlayersLatterHalf = getPlayerStatusInfo("benchLatterHalf")	--获取替补席球员信息，未显示的后半部分
 	if #CFG.SUBSTITUTE_INDEX_LIST > 0 then		--将用户的对应关系写入benchPlayersInfo
@@ -284,7 +285,7 @@ function processSwitchPlayer()
 	end
 end
 
-function processFreshPlayerContract()
+function processFreshPlayerContract0()
 	sleep(1000)
 	local points = findColors({27, 111, 933, 461},
 		"164|141|0xff3b2f,189|142|0xff3b2f,177|129|0xff3b2f,177|155|0xff3b2f,102|218|0x363a4d,199|198|0xe3e3e6")
@@ -334,6 +335,104 @@ function processFreshPlayerContract()
 				table.insert(expiredPlayerLatterHalf, v)
 				tap(v.x, v.y)
 				sleep(20)
+			end
+		end
+		prt(expiredPlayerLatterHalf)
+	end
+	
+	page.goNextByCatchPoint({474, 474, 761, 535},	--点击签约
+		"575|517|0xcaddf0,502|498|0xcaddf0,707|522|0xcaddf0,798|497|0x0079fd,786|526|0x0079fd")
+	sleep(300)
+	page.goNextByCatchPoint({173, 104, 778, 434}, 	--使用资金/金币
+		"372|281|0xffffff,212|271|0xdedede,748|276|0xdedede,440|316|0xdedede,412|367|0xcaddf0")
+	sleep(300)
+	page.goNextByCatchPoint({173, 104, 778, 434}, 	--使用资金
+		"360|282|0x1e54b2,265|249|0xe6e6ed,272|342|0xe6e6ed,692|248|0xe6e6ed,690|342|0xe6e6ed")
+	sleep(300)
+	
+	local startTime = os.time()
+	while true do	--可能出现资金不足
+		local outOfGp = page.matchColors("267|296|0xcaddf0,479|333|0xcaddf0,480|293|0xcaddf0,698|302|0xcaddf0,421|507|0x767677")
+		local payConfirm = page.matchColors("267|296|0xcaddf0,479|333|0xf5f5f5,480|293|0xf5f5f5,698|302|0xcaddf0,421|507|0x767677")
+		if outOfGp then
+			catchError(ERR_TASK_ABORT, "GP不够续约，请退出")
+		elseif payConfirm then
+			break
+		end
+		
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+			catchError(ERR_TIMEOUT, "time out at wait pay info")
+		end
+		sleep(50)
+	end
+	
+	page.goNextByCatchPoint({193, 153, 754, 408},	--支付确定
+		"561|318|0xcaddf0,262|296|0xcaddf0,683|326|0xcaddf0")
+	sleep(300)
+	page.goNextByCatchPoint({193, 153, 754, 408}, 	--已续约确定
+		"438|388|0xcaddf0,267|358|0xcaddf0,691|392|0xcaddf0,476|158|0x06b824")
+	sleep(300)
+	page.goNextByCatchPoint({769, 473, 955, 530},	--下一步
+		"837|520|0x0079fd,783|527|0x0079fd,947|500|0x0079fd")
+end
+
+function processFreshPlayerContract()
+	sleep(1000)
+	
+	--6个球员分开扫描，同时扫描findColors可能大于99点
+	local areaList = {
+		{27,111,480,228},
+		{480,111,933,228},
+		{27,228,480,344},
+		{480,228,933,344},
+		{27,344,480,461},
+		{480,344,933,461}}
+	local expiredPlayerFirstHalf = {}
+	local expiredPlayerLatterHalf = {}
+	
+	for _, v_ in pairs(areaList) do
+		local points = findColors(v_,
+			"0|0|0xff3b2f,25|1|0xff3b2f,12|-12|0xff3b2f,12|14|0xff3b2f,-105|33|0xffffff,-105|46|0xffffff")
+		for k, v in pairs(points) do
+			local exsitFlag = false
+			for _k, _v in pairs(expiredPlayerFirstHalf) do
+				if math.abs(v.x - _v.x) < 20 and math.abs(v.y - _v.y) < 20 then
+					exsitFlag = true
+					break
+				end
+			end
+			
+			if exsitFlag == false then
+				table.insert(expiredPlayerFirstHalf, v)
+				tap(v.x, v.y)
+				sleep(20)
+				break	--一个球员区域，确保找到一个点，点击后忽略掉其他点
+			end
+		end
+	end
+	prt(expiredPlayerFirstHalf)
+	
+	if #expiredPlayerFirstHalf == 3 or expiredPlayerFirstHalf == 6 then
+		touchMoveTo(20, 500, 20, 110) --滑动替补至下半部分
+		sleep(400)
+		for _, v_ in pairs(areaList) do
+			local points = findColors(v_,
+				"0|0|0xff3b2f,25|1|0xff3b2f,12|-12|0xff3b2f,12|14|0xff3b2f,-105|33|0xffffff,-105|46|0xffffff")
+			for k, v in pairs(points) do
+				local exsitFlag = false
+				for _k, _v in pairs(expiredPlayerLatterHalf) do
+					if math.abs(v.x - _v.x) < 20 and math.abs(v.y - _v.y) < 20 then
+						exsitFlag = true
+						break
+					end
+				end
+				
+				if exsitFlag == false then
+					table.insert(expiredPlayerLatterHalf, v)
+					tap(v.x, v.y)
+					sleep(20)
+					break	--一个球员区域，确保找到一个点，点击后忽略掉其他点
+				end
 			end
 		end
 		prt(expiredPlayerLatterHalf)

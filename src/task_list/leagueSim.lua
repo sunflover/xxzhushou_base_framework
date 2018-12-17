@@ -15,16 +15,16 @@ local M = {}
 local taskLeagueSim = {
 	name = TASK_LEAGUE_SIM,
 	process = {
-		{name = PAGE_MAIN, allowSkip = true},	--设置为justFirstRun会影响断点任务，因为联赛断点回回到主界面去
-		{name = PAGE_LEAGUE, allowSkip = true},
-		{name = PAGE_LEAGUE_SIM, allowSkip = true},
-		{name = PAGE_LEAGUE_MATCHED, allowSkip = true},
-		{name = PAGE_ROSTER, allowSkip = true},
-		{name = PAGE_LEAGUE_BREAKING, allowSkip = true, justBreakingRun = true},	--仅仅用来续接断点任务
+		{name = PAGE_MAIN},	--设置为justFirstRun会影响断点任务，因为联赛断点回回到主界面去
+		{name = PAGE_LEAGUE},
+		{name = PAGE_LEAGUE_SIM},
+		{name = PAGE_LEAGUE_MATCHED},
+		{name = PAGE_ROSTER},
+		{name = PAGE_LEAGUE_BREAKING, justBreakingRun = true},	--仅仅用来续接断点任务
 		{name = PAGE_PLAYING, timeout = 50},	--无action，但是可用于续接playing状态的断点流程,不允许skip
-		{name = PAGE_INTERVAL, timeout = 600, allowSkip = true, checkInterval = 1000},	--半场需要时间比较就
-		{name = PAGE_INTERVAL_READY, allowSkip = true},
-		{name = PAGE_INTERVAL, timeout = 600, allowSkip = true, checkInterval = 1000},	--90分钟结束
+		{name = PAGE_INTERVAL, timeout = 600, checkInterval = 1000},	--半场需要时间比较就
+		{name = PAGE_INTERVAL_READY},
+		{name = PAGE_INTERVAL, timeout = 600, checkInterval = 1000},	--90分钟结束
 		{name = PAGE_END_READY},
 		{name = PAGE_LEAGUE_POINTS},
 		{name = PAGE_LEAGUE_RESULT},
@@ -43,8 +43,8 @@ funcList[PAGE_MAIN] = function()
 end
 
 funcList[PAGE_LEAGUE] = function()
-	page.goNextByCatchPoint({25, 55, 903, 492},
-		"480|267|0x000000,470|261|0x000000,489|272|0x000000,401|83|0xf52563,585|450|0x007aff")
+	page.goNextByCatchPoint({41, 55, 896, 486},
+		"480|258|0x000000,478|283|0x000000,432|91|0xd43b6a")
 end
 
 funcList[PAGE_LEAGUE_SIM] = function()
@@ -58,8 +58,10 @@ funcList[PAGE_LEAGUE_SIM] = function()
 			page.goNextByCatchPoint({163, 120, 797, 408}, 	--确定跳到下个阶段
 				"566|321|0xcaddf0,265|294|0xcaddf0,683|330|0xcaddf0,205|272|0x999999,756|270|0x131313")
 			sleep(500)
-			page.goNextByCatchPoint({46, 27, 869, 525},
-				"438|420|0xcaddf0,265|406|0xcaddf0,683|441|0xcaddf0,187|145|0x00d422,778|153|0x00d422")
+			--page.goNextByCatchPoint({46, 27, 869, 525}, 	--进阶确定
+				--"438|420|0xcaddf0,265|406|0xcaddf0,683|441|0xcaddf0,187|145|0x00d422,778|153|0x00d422")
+			page.goNextByCatchPoint({158,153,836,525},
+				"442|431|0xcaddf0,273|404|0xcaddf0,682|442|0xcaddf0,695|387|0xf5f5f5,269|459|0xf5f5f5")
 			sleep(500)
 			page.goNextByCatchPoint({188, 34, 792, 502}, 	--赛季奖励
 				"438|423|0xcaddf0,267|405|0xcaddf0,689|444|0xcaddf0,447|185|0xf05674,515|191|0xf05674")
@@ -187,7 +189,9 @@ funcList[PAGE_LEAGUE_SCOUT] = function()
 		local nextPage = page.catchFewProbabilityPage(PAGE_LEAGUE_SIM,	--可能续约教练和球员
 			{"442|337|0xcaddf0,268|319|0xcaddf0,687|349|0xcaddf0,344|198|0x4cd964,786|206|0x2e823c",	--教练续约
 				"206|105|0x13304d,450|165|0xffa2a8,509|166|0xffffff,485|199|0xff3261,440|404|0xcaddf0,445|450|0xf5f5f5",
-				"136|21|0x000000,264|26|0x000000,712|18|0x007aff,122|513|0xe2e2e2,760|511|0xffffff,258|512|0xc6c6c6"})--球员续约
+				"136|21|0x000000,264|26|0x000000,712|18|0x007aff,122|513|0xe2e2e2,760|511|0xffffff,258|512|0xc6c6c6",	--球员续约
+				"65|23|0x12326a,73|22|0x080808,83|3|0xffffff,919|39|0x007aff,912|39|0xccdff2,927|39|0xccdff2,920|32|0xccdff2,920|47|0xccdff2"})	--通知
+				
 		if nextPage == 1 then	--教练续约
 			page.goNextByCatchPoint({167, 103, 792, 426},	--清除定额确定
 				"442|337|0xcaddf0,268|319|0xcaddf0,687|349|0xcaddf0,344|198|0x4cd964,786|206|0x2e823c")
@@ -202,13 +206,34 @@ funcList[PAGE_LEAGUE_SCOUT] = function()
 			else
 				catchError(ERR_TASK_ABORT, "球员合同已用完")
 			end
-		elseif nextPage == 0 or nextPage == 3 then	--已经返回到教练模式主界面，3为断点任务返回到main界面
+		elseif nextPage == 0 or nextPage == 3 or nextPage == 4 then	--已经返回到教练模式主界面，3为断点任务返回到main界面
 			break
 		end
 		
 		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
 			--catchError(ERR_TIMEOUT, "timeout at wait cocah or player expired")
 			break
+		end
+		sleep(50)
+	end
+	
+	--断点任务的时候可能出现通知，在这儿跳过
+	local startTime = os.time()
+	while true do
+		local nextPage = page.catchFewProbabilityPage(PAGE_MAIN,{
+				"267|26|0x000000,69|122|0x0079fd,89|127|0x12a42b,82|387|0x0079fd,370|286|0x135e9b,878|95|0xfc3979",		--PAGE_LEAGUE_SIM
+				"65|23|0x12326a,73|22|0x080808,83|3|0xffffff,919|39|0x007aff,912|39|0xccdff2,927|39|0xccdff2,920|32|0xccdff2,920|47|0xccdff2"	--还有通知
+			})
+		
+		if nextPage == 2 then	--关闭消息
+			page.goNextByCatchPoint({822, 8, 953, 80}, 	--关闭消息
+				"920|39|0x007aff,913|39|0xccdff2,920|32|0xccdff2,927|39|0xccdff2,920|47|0xccdff2")
+		elseif nextPage == 0 or nextPage == 1 then
+			break
+		end
+		
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+			catchError(ERR_TIMEOUT, "time out at close notice")
 		end
 		sleep(50)
 	end
