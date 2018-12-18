@@ -34,8 +34,11 @@ if page.getCurrentPage() ~= nil then Log(page.getCurrentPage()) else Log("nil pa
 sleep(3000)
 --processFreshPlayerContract()
 
-current_time = tostring(os.time())
---snapshot("[public]"..current_time..".png", 0, 0, 959, 539);  --截图并以当前时间戳命名
+for k, v in pairs(page.pageEigenvalueList) do
+Log("k="..k)
+--sleep(5000)
+Log(v.pageName.."\r\n")
+end
 --[[
 
 url = 'http://113.110.228.79:9091',

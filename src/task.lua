@@ -74,7 +74,6 @@ end
 --执行任务，param:任务名称，任务重复次数
 function M.run(taskName, repeatTimes)
 	local reTimes = repeatTimes or CFG.DEFAULT_REPEAT_TIMES
-	local firstRunProcess = true
 	
 	if M.isExistTask(taskName) ~= true then		--检查任务是否存在
 		M.setCurrentTaskStatus("end")	--清空断点任务状态，防止错误卡死
@@ -153,10 +152,6 @@ function M.run(taskName, repeatTimes)
 						Log("------start execute process: "..v.name)
 						v.actionFunc()
 						Log("--------end execute process: "..v.name)
-					end
-					
-					if firstRunProcess then		--执行过一个流程后就不再考虑存在断点任务
-						firstRunProcess = false
 					end
 					
 					break	--完成当前流程片

@@ -16,7 +16,7 @@ function isAppRunning()
 	return false
 end
 
---将LOG信息写入日志文件,不收CFG.LOG的影响
+--将LOG信息写入日志文件,不受CFG.LOG的影响
 local function writeLog(content)		--写日志文件
 	if content == nil then
 		return

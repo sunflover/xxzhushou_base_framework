@@ -45,9 +45,7 @@ M.pageEigenvalueList = {
 	{pageName = PAGE_LEAGUE_POINTS, points = "138|355|0x135e9b,137|369|0x135e9b,138|411|0xa8cce0,135|421|0x135e9b,831|513|0x0079fd"},
 	{pageName = PAGE_LEAGUE_RESULT, points = "416|162|0x9ec2ff,435|162|0x1e53b1,458|162|0x9ec2ff,472|162|0x1e53b1,492|164|0x9ec2ff,437|515|0xcaddf0,454|511|0x0078fd"},
 	{pageName = PAGE_LEAGUE_SCOUT, points = "440|124|0xffcc00,435|145|0x638799,530|150|0x638799,479|149|0x98aab3,505|506|0xc2c2c2,832|510|0x0079fd"},
-	{pageName = PAGE_PLAYER_EXPIRED, points = "206|105|0x13304d,450|165|0xffa2a8,509|166|0xffffff,485|199|0xff3261,440|404|0xcaddf0,445|450|0xf5f5f5"},
 	{pageName = PAGE_LEAGUE_BREAKING, points = "321|89|0x797979,289|117|0x7d7d7d,480|460|0x7a7a7a,308|342|0xcaddf0,669|346|0xcaddf0,385|476|0x7f7f7f"},
-	--{pageName = PAGE_ACHIEVEMENT, points = "268|26|0x000000,878|95|0x972249,138|93|0x26b21c,821|238|0x26b21c,263|406|0xcaddf0,695|443|0xcaddf0"},
 }
 
 --将{{x1, y1, c1},{x2, y2, c2},}转换成"x1|y1|c1,x2|y2|c2"格式

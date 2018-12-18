@@ -80,30 +80,39 @@ end
 
 funcList[PAGE_COACH_RANK] = function()
 	sleep(200)
-	--page.goNextByCatchPoint({751, 476, 955, 534},
-	--	"823|511|0x0079fd,950|494|0x0079fd,943|526|0x0079fd,789|526|0x0079fd,765|507|0x696969")
-	page.goNextByCatchPoint({753, 469, 957, 533},
-		"828|520|0x0079fd,782|528|0x0079fd,804|501|0x0079fd,937|526|0x0079fd")
-	--低概率出现，不加入skip机制，skip机制需要等待CFG.WAIT_SKIP_NIL_PAGE时间后才能进入
-	if page.catchFewProbabilityPage(PAGE_COACH_RANK, "439|168|0xf5f5f5,442|182|0xdedede,411|276|0xffffff,408|315|0xdedede,401|361|0xcaddf0") == 1 then
-		page.goNextByCatchPoint({208, 281, 749, 442}, "434|374|0xcaddf0,233|358|0xcaddf0,715|387|0xcaddf0,464|333|0xf5f5f5")
-		--dialog("能量不足，请退出")
-		--catchError(ERR_TASK_ABORT, "能量不足将退出")
-		if CFG.RESTORED_ENERGY == true then
-			dialog("能量不足100分钟内后继续，请勿操作", 5)
-			local startTime = os.time()
-			while true do
-				if os.time() - startTime > 110 * 60 then
-					dialog("已续足能量，即将继续任务", 5)
-					break
+	
+	local startTime = os.time()
+	while true do
+		page.goNextByCatchPoint({753, 469, 957, 533},
+			"828|520|0x0079fd,782|528|0x0079fd,804|501|0x0079fd,937|526|0x0079fd")
+		--低概率出现，不加入skip机制，skip机制需要等待CFG.WAIT_SKIP_NIL_PAGE时间后才能进入
+		local nextPage = page.catchFewProbabilityPage(PAGE_MATCHED, "439|168|0xf5f5f5,442|182|0xdedede,411|276|0xffffff,408|315|0xdedede,401|361|0xcaddf0")
+		if nextPage == 1 then	--能量不足
+			page.goNextByCatchPoint({208, 281, 749, 442}, "434|374|0xcaddf0,233|358|0xcaddf0,715|387|0xcaddf0,464|333|0xf5f5f5")
+			if CFG.RESTORED_ENERGY == true then
+				dialog("能量不足100分钟内后继续，请勿操作", 5)
+				local _startTime = os.time()
+				while true do
+					if os.time() - _startTime > 110 * 60 then
+						dialog("已续足能量，即将继续任务", 5)
+						startTime = os.time()	--重置startTime
+						break
+					end
+					sleep(60 * 1000)	--每分钟检测一次
 				end
-				sleep(60 * 1000)	--每分钟检测一次
+			else
+				Log("能量不足，请退出")
+				dialog("能量不足，请退出")
+				lua_exit()
 			end
-		else
-			Log("能量不足，请退出")
-			dialog("能量不足，请退出")
-			lua_exit()
+		elseif nextPage == 0 then
+			break
 		end
+		
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+			catchError(ERR_TIMEOUT, "time out in PAGE_COACH_RANK")
+		end
+		sleep(50)
 	end
 end
 

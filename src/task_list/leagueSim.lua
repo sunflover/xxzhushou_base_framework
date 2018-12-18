@@ -59,6 +59,7 @@ funcList[PAGE_LEAGUE_SIM] = function()
 	end
 	
 	--可跳过余下比赛
+	local startTime = os.time()
 	while true do
 		sleep(500)
 		if page.matchColors("510|501|0xcaddf0,510|522|0xcaddf0,677|511|0xcaddf0,705|506|0xcaddf0", 90) then
@@ -86,10 +87,11 @@ funcList[PAGE_LEAGUE_SIM] = function()
 			sleep(200)
 			if CFG.RESTORED_ENERGY == true then
 				dialog("能量不足100分钟内后继续，请勿操作", 5)
-				local startTime = os.time()
+				local _startTime = os.time()
 				while true do
-					if os.time() - startTime > 110 * 60 then
+					if os.time() - _startTime > 110 * 60 then
 						dialog("已续足能量，即将继续任务", 5)
+						startTime = os.time()	--重置startTime
 						break
 					end
 					sleep(60 * 1000)	--每分钟检测一次
@@ -101,6 +103,10 @@ funcList[PAGE_LEAGUE_SIM] = function()
 			end
 		else
 			break	--没有能量不足就直接跳出
+		end
+		
+		if os.time() - startTime > CFG.DEFAULT_TIMEOUT then
+			catchError(ERR_TIMEOUT, "time out in PAGE_LEAGUE_SIM")
 		end
 		sleep(200)
 	end
