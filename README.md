@@ -1,7 +1,4 @@
-﻿# xxzhushou_base_framework 思路与设计
-
-叉叉助手 框架 引擎v1.9
-
+﻿# xxzhushou_base_framework 叉叉助手基本框架
 [README备用链接](https://www.zybuluo.com/cndy1860/note/1369690)
 ---
 
