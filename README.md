@@ -66,7 +66,8 @@ isProcessPage=>condition: 是否为当前流程片对应的界面
 actionFunc=>operation: 执行流程片事件函数actionFunc
 waitFunc=>operation: 执行流程片等待事件函数waitFunc
 checkTimeout=>operation: timeout检测
-isSkip=>condition: 是否发生了skip
+isSkip=>condition: 是否需要skip部分流程片
+setSkip=>operation: 设置skip属性
 e=>end: 完成当前流程片流程
 st->setSkipStatus->setSkipTime->execProcess->isSkipProcess
 isSkipProcess(no,left)->checkCurretPage
@@ -75,7 +76,7 @@ checkCurretPage->isProcessPage
 isProcessPage(no,left)->waitFunc
 isProcessPage(yes)->actionFunc->execProcess
 waitFunc->checkTimeout->isSkip
-isSkip(yes)->isSkipProcess
+isSkip(yes)->setSkip->isSkipProcess
 isSkip(no)->checkCurretPage
 ```
 ## 核心机制说明
