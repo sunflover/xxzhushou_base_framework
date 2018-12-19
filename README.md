@@ -1,5 +1,4 @@
-﻿# xxzhushou_base_framework 叉叉助手基本框架
-[README备用链接](https://www.zybuluo.com/cndy1860/note/1369690)
+# xxzhushou_base_framework 叉叉助手基本框架
 ---
 
 ## 框架说明
@@ -53,7 +52,7 @@
 
 一个完整的脚本任务`task`由一系列流程`processes`组成，而流程又由多个流程片`process`组成，每一个流程片由流程片初始界面`page`和一个事件函数`actionFunc`组成。  `runTask`方法首先会从`taskList`中提取对应的`processes`，然后以`process`为单位具体执行。程序首先会等待流程片初始界面`page`的到来，但并不关心之前的任何流程，然后开始执行流程片的具体的逻辑操作函数`actionFunc`，执行完成后释放流程片控制权，同时不关心后续流程。
 ### Task.Run流程图
-注:GFM可能不支持流程图，如不支持可自行COPY代码在其他工具上查看（自行添加flow标签）
+注:GFM可能不支持流程图，如不支持可自行COPY代码在其他工具上查看（自行添加flow标签）[README备用链接](https://www.zybuluo.com/cndy1860/note/1369690)
 ```flow
 st=>start: Task.Run
 execTask=>operation: 循环执行任务(流程)
