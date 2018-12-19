@@ -52,29 +52,40 @@
 ## 框架流程执行
 
 一个完整的脚本任务`task`由一系列流程`processes`组成，而流程又由多个流程片`process`组成，每一个流程片由流程片初始界面`page`和一个事件函数`actionFunc`组成。  `runTask`方法首先会从`taskList`中提取对应的`processes`，然后以`process`为单位具体执行。程序首先会等待流程片初始界面`page`的到来，但并不关心之前的任何流程，然后开始执行流程片的具体的逻辑操作函数`actionFunc`，执行完成后释放流程片控制权，同时不关心后续流程。
-### `process`执行流程图
+### Task.Run流程图
 注:GFM可能不支持流程图，如不支持可自行COPY代码在其他工具上查看（自行添加flow标签）
 ```flow
-st=>start: 循环执行流程片
+st=>start: Task.Run
+execTask=>operation: 循环执行任务(流程)
+isTaskFinish=>condition: 是否执行完指定的任务次数
 setSkipStatus=>operation: 根据justFirstRun和justBreakingRun
-设置各流程片的初始skip属性
+设置各流程片的默认skip属性
 setSkipTime=>operation: 设置进入skip检测的等待时间
-execProcess=>operation: 遍历执行流程片
-isSkipProcess=>condition: 是否需要跳过的流程片
+execProcess=>operation: 遍历执行当前（次）任务的流程片
+isFinishProcess=>condition: 是否执行完当前（次）流程的所有流程片
+isSkipProcess=>condition: 是否为需要跳过的流程片
 checkCurretPage=>operation: 循环检测当前界面
 isProcessPage=>condition: 是否为当前流程片对应的界面
-actionFunc=>operation: 执行流程片事件函数actionFunc
+actionFunc=>subroutine: 执行actionFunc
+actionFunc1=>subroutine: 执行actionFunc
 waitFunc=>operation: 执行流程片等待事件函数waitFunc
 checkTimeout=>operation: timeout检测
 isSkip=>condition: 是否需要skip部分流程片
 setSkip=>operation: 设置skip属性
-e=>end: 完成当前流程片流程
-st->setSkipStatus->setSkipTime->execProcess->isSkipProcess
+e=>end: 完成Task
+
+st->execTask->isTaskFinish
+isTaskFinish(no,left)->setSkipStatus
+isTaskFinish(yes)->e
+setSkipStatus->setSkipTime->execProcess->isFinishProcess
+isFinishProcess(no,left)->isSkipProcess
+isFinishProcess(yes)->isTaskFinish
 isSkipProcess(no,left)->checkCurretPage
 isSkipProcess(yes)->execProcess
 checkCurretPage->isProcessPage
 isProcessPage(no,left)->waitFunc
-isProcessPage(yes)->actionFunc->execProcess
+isProcessPage(yes)->actionFunc(right)
+actionFunc->execProcess
 waitFunc->checkTimeout->isSkip
 isSkip(yes)->setSkip->isSkipProcess
 isSkip(no)->checkCurretPage
