@@ -1,3 +1,5 @@
+此项目已废弃，请移步至全分辨率适配的新版本https://github.com/cndy1860/X-Framework
+
 # xxzhushou_base_framework 叉叉助手基本框架
 `叉叉助手` `框架` `v1.9引擎`
 ---
